@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Budget - FC VAINQUEUR{% endblock %}
+{% block page_title %}<i class="fas fa-wallet me-2"></i> Gestion du Budget{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex gap-2 flex-wrap">
+        {% if current_user.has_perm('budget_ajouter') %}
+        <a href="{{ url_for('budget.ajouter', type='recette') }}" class="btn btn-success btn-sm">
+            <i class="fas fa-plus me-1"></i> Recette
+        </a>
+        <a href="{{ url_for('budget.ajouter', type='depense') }}" class="btn btn-danger btn-sm">
+            <i class="fas fa-plus me-1"></i> Depense
+        </a>
+        {% endif %}
+        {% if current_user.has_perm('budget_exporter') %}
+        <div class="btn-group">
+            <a href="{{ url_for('budget.export_pdf') }}" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-file-pdf me-1"></i> PDF
+            </a>
+            <a href="{{ url_for('budget.export_excel') }}" class="btn btn-outline-success btn-sm">
+                <i class="fas fa-file-excel me-1"></i> Excel
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-success bg-opacity-10">
+            <div class="card-body">
+                <small class="text-muted">Recettes totales</small>
+                <h4 class="fw-bold text-success mb-0">{{ "{:,.0f}".format(recettes) }} FC</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-danger bg-opacity-10">
+            <div class="card-body">
+                <small class="text-muted">Depenses totales</small>
+                <h4 class="fw-bold text-danger mb-0">{{ "{:,.0f}".format(depenses) }} FC</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-primary bg-opacity-10">
+            <div class="card-body">
+                <small class="text-muted">Solde actuel</small>
+                <h4 class="fw-bold mb-0 {% if solde >= 0 %}text-success{% else %}text-danger{% endif %}">
+                    {{ "{:,.0f}".format(solde) }} FC
+                </h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <canvas id="budgetChart" height="100"></canvas>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-success">
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Motif</th>
+                        <th>Responsable</th>
+                        <th class="text-end">Montant</th>
+                        {% if current_user.has_perm('budget_supprimer') or current_user.has_perm('budget_ajouter') %}
+                        <th></th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for op in operations %}
+                    <tr class="{{ 'table-success bg-opacity-10' if op.type_operation == 'recette' else 'table-danger bg-opacity-10' }}">
+                        <td>{{ op.date_operation }}</td>
+                        <td>
+                            <span class="badge {{ 'bg-success' if op.type_operation == 'recette' else 'bg-danger' }}">
+                                {{ 'Recette' if op.type_operation == 'recette' else 'Depense' }}
+                            </span>
+                        </td>
+                        <td>{{ op.motif }}</td>
+                        <td>{{ op.responsable or '-' }}</td>
+                        <td class="text-end fw-bold">{{ "{:,.0f}".format(op.montant) }} FC</td>
+                        {% if current_user.has_perm('budget_supprimer') or current_user.has_perm('budget_ajouter') %}
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                {% if current_user.has_perm('budget_ajouter') %}
+                                <a href="{{ url_for('budget.modifier', budget_id=op.id) }}"
+                                   class="btn btn-outline-primary"><i class="fas fa-edit"></i></a>
+                                {% endif %}
+                                {% if current_user.has_perm('budget_supprimer') %}
+                                <button class="btn btn-outline-danger" data-bs-toggle="modal"
+                                        data-bs-target="#deleteBudgetModal{{ op.id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                            <div class="modal fade" id="deleteBudgetModal{{ op.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-sm">
+                                    <div class="modal-content">
+                                        <form method="POST" action="{{ url_for('budget.supprimer', budget_id=op.id) }}">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h6 class="modal-title">Supprimer ?</h6>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p class="mb-2">{{ op.motif }} - {{ "{:,.0f}".format(op.montant) }} FC</p>
+                                                {% if current_user.is_super_admin() %}
+                                                <input type="password" name="admin_password" class="form-control form-control-sm"
+                                                       placeholder="Mot de passe Admin" required>
+                                                {% endif %}
+                                            </div>
+                                            <div class="modal-footer py-1">
+                                                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Non</button>
+                                                <button type="submit" class="btn btn-sm btn-danger">Oui</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                    {% if not operations %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">Aucune operation</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+fetch('{{ url_for("budget.chart_data") }}')
+    .then(r => r.json())
+    .then(data => {
+        new Chart(document.getElementById('budgetChart'), {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [
+                    { label: 'Recettes', data: data.recettes, backgroundColor: '#2E7D32' },
+                    { label: 'Depenses', data: data.depenses, backgroundColor: '#C62828' }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { title: { display: true, text: 'Evolution du Budget', font: { size: 14, weight: 'bold' } } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    });
+</script>
+{% endblock %}
