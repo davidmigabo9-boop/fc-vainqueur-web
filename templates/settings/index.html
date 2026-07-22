@@ -47,6 +47,7 @@
                     <tr>
                         <th>Nom</th>
                         <th>Identifiant</th>
+                        <th>Mot de passe</th>
                         <th>Role</th>
                         <th></th>
                     </tr>
@@ -57,8 +58,36 @@
                     <tr>
                         <td class="fw-bold">{{ u.nom_complet }}</td>
                         <td>{{ u.username }}</td>
-                        <td><span class="badge bg-{{ role_colors.get(u.role, 'secondary') }}">{{ u.role_label }}</span></td>
                         <td>
+                            <span class="password-field" id="pw_{{ u.id }}">
+                                <code>{{ u.password_visible or '***' }}</code>
+                            </span>
+                        </td>
+                        <td><span class="badge bg-{{ role_colors.get(u.role, 'secondary') }}">{{ u.role_label }}</span></td>
+                        <td class="d-flex gap-1">
+                            {% if current_user.has_perm('parametres_modifier') %}
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                                    data-bs-target="#resetPwModal{{ u.id }}">
+                                <i class="fas fa-key"></i>
+                            </button>
+                            <div class="modal fade" id="resetPwModal{{ u.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-sm">
+                                    <div class="modal-content">
+                                        <form method="POST" action="{{ url_for('settings.reset_password', user_id=u.id) }}">
+                                            <div class="modal-body">
+                                                <p>Changer le mot de passe de <strong>{{ u.username }}</strong></p>
+                                                <input type="password" name="new_password" class="form-control form-control-sm"
+                                                       placeholder="Nouveau mot de passe" required>
+                                            </div>
+                                            <div class="modal-footer py-1">
+                                                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                <button type="submit" class="btn btn-sm btn-primary">Changer</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
                             {% if u.username != 'admin' and current_user.has_perm('utilisateurs_supprimer') %}
                             <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
                                     data-bs-target="#deleteUserModal{{ u.id }}">
