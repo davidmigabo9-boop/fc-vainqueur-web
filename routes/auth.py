@@ -24,7 +24,11 @@ def login():
                 f"Connexion reussie - Role: {get_role_label(user.role)}",
             )
             next_page = request.args.get("next")
-            return redirect(next_page or url_for("main.dashboard"))
+            if next_page:
+                return redirect(next_page)
+            if user.has_perm("dashboard_voir"):
+                return redirect(url_for("main.dashboard"))
+            return redirect(url_for("joueurs.joueurs_list"))
         flash("Identifiant ou mot de passe incorrect.", "danger")
     return render_template("login.html")
 
