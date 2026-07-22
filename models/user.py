@@ -14,6 +14,7 @@ class Utilisateur(UserMixin, db.Model):
     password_hash = db.Column(db.String(256), nullable=False)
     password_visible = db.Column(db.String(128), default="")
     role = db.Column(db.String(50), nullable=False, default="lecteur")
+    joueur_id = db.Column(db.Integer, db.ForeignKey("joueurs.id"), nullable=True)
     date_creation = db.Column(db.DateTime, default=datetime.utcnow)
 
     def set_password(self, password):
