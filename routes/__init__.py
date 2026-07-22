@@ -13,7 +13,7 @@ def role_required(permission):
                 flash("Vous n'avez pas les droits pour acceder a cette page.", "danger")
                 if current_user.has_perm("dashboard_voir"):
                     return redirect(url_for("main.dashboard"))
-                return redirect(url_for("joueurs.joueurs_list"))
+                return redirect(url_for("joueurs.index"))
             return f(*args, **kwargs)
         return decorated_function
     return decorator
