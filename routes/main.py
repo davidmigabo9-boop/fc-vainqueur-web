@@ -6,7 +6,7 @@ from models.equipement import Equipement
 from models.audit import AuditLog
 from models.programme import Programme
 from models.photo import Photo
-from datetime import datetime
+from datetime import datetime, timedelta
 from routes import role_required
 
 main_bp = Blueprint("main", __name__)
@@ -45,5 +45,19 @@ def dashboard():
         "recettes_mois": Budget.recettes_mois(mois, annee),
     }
 
+    joueurs_sans_cotisation = Joueur.sans_contribution_mois(mois, annee)
+    nb_sans = len(joueurs_sans_cotisation)
+
+    demain = (now + timedelta(days=1)).strftime("%Y-%m-%d")
+    aujourdhui = now.strftime("%Y-%m-%d")
+    prochains_matchs = Programme.query.filter(
+        Programme.actif == 1,
+        Programme.date_evenement.in_([aujourdhui, demain])
+    ).all()
+
+    budget_faible = stats["solde"] < 50000
+
     recent_logs = AuditLog.get_recent(5)
-    return render_template("dashboard.html", stats=stats, recent_logs=recent_logs, page="dashboard")
+    return render_template("dashboard.html", stats=stats, recent_logs=recent_logs,
+                           page="dashboard", nb_sans_cotisation=nb_sans,
+                           prochains_matchs=prochains_matchs, budget_faible=budget_faible)
