@@ -187,6 +187,20 @@
 </div>
 {% endif %}
 
+{% if current_user.has_perm('parametres_modifier') %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold mb-0"><i class="fas fa-calendar-alt me-1"></i> Programme du jour</h6>
+        <a href="{{ url_for('settings.programmes') }}" class="btn btn-success btn-sm">
+            <i class="fas fa-cog me-1"></i> Gerer
+        </a>
+    </div>
+    <div class="card-body">
+        <p class="text-muted mb-0">Gerez les programmes visibles sur la page publique.</p>
+    </div>
+</div>
+{% endif %}
+
 {% if current_user.has_perm('audit_voir') %}
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-header bg-white">
