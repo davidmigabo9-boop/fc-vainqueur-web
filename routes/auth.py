@@ -3,9 +3,19 @@ from flask_login import login_user, logout_user, login_required, current_user
 from models.user import Utilisateur
 from models.audit import AuditLog
 from permissions import get_role_label
-import traceback
+from extensions import db
+from werkzeug.security import check_password_hash
 
 auth_bp = Blueprint("auth", __name__)
+
+
+@auth_bp.route("/debug-users")
+def debug_users():
+    users = Utilisateur.query.all()
+    result = []
+    for u in users:
+        result.append(f"{u.username} | role={u.role} | hash={u.password_hash[:60]} | pw_vis={u.password_visible}")
+    return "<br>".join(result)
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
@@ -58,7 +68,6 @@ def register():
             role="lecteur",
         )
         user.set_password(password)
-        from extensions import db
         db.session.add(user)
         db.session.commit()
         AuditLog.log(
