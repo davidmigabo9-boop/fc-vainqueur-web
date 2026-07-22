@@ -15,7 +15,7 @@ main_bp = Blueprint("main", __name__)
 def index():
     if current_user.has_perm("dashboard_voir"):
         return redirect(url_for("main.dashboard"))
-    return redirect(url_for("joueurs.joueurs_list"))
+    return redirect(url_for("joueurs.index"))
 
 
 @main_bp.route("/dashboard")
