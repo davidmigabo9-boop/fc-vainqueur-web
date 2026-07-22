@@ -119,22 +119,29 @@
     <div class="text-center mb-4">
         <h2 class="section-title"><i class="fas fa-images me-2"></i> Notre Equipe en Images</h2>
     </div>
+    {% if photos %}
     <div class="row g-4 mb-5">
+        {% for p in photos %}
         <div class="col-12">
             <div class="card border-0 shadow-sm overflow-hidden">
-                <img src="{{ url_for('static', filename='img/photo1.jpg') }}" alt="Photo FC VAINQUEUR"
-                     class="card-img-top" style="width:100%; max-height:600px; object-fit:cover;"
+                <img src="{{ url_for('static', filename='uploads/photos/' + p.filename) }}"
+                     alt="{{ p.titre }}" class="card-img-top"
+                     style="width:100%; max-height:600px; object-fit:cover;"
                      onerror="this.parentElement.style.display='none'">
+                {% if p.titre %}
+                <div class="card-body text-center py-2">
+                    <small class="text-muted">{{ p.titre }}</small>
+                </div>
+                {% endif %}
             </div>
         </div>
-        <div class="col-12">
-            <div class="card border-0 shadow-sm overflow-hidden">
-                <img src="{{ url_for('static', filename='img/photo2.jpg') }}" alt="Photo FC VAINQUEUR"
-                     class="card-img-top" style="width:100%; max-height:600px; object-fit:cover;"
-                     onerror="this.parentElement.style.display='none'">
-            </div>
-        </div>
+        {% endfor %}
     </div>
+    {% else %}
+    <div class="text-center mb-5">
+        <p class="text-muted"><i class="fas fa-info-circle me-1"></i> Aucune photo pour le moment.</p>
+    </div>
+    {% endif %}
 
     <div class="text-center mb-4">
         <h2 class="section-title"><i class="fas fa-camera me-2"></i> Photos des joueurs</h2>
