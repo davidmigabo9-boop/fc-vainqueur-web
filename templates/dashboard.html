@@ -2,6 +2,29 @@
 {% block title %}Tableau de bord - FC VAINQUEUR{% endblock %}
 {% block page_title %}<i class="fas fa-chart-line me-2"></i> Tableau de bord{% endblock %}
 {% block content %}
+
+{% if nb_sans_cotisation > 0 %}
+<div class="alert alert-warning d-flex align-items-center shadow-sm" role="alert">
+    <i class="fas fa-exclamation-triangle me-2 fs-5"></i>
+    <strong>{{ nb_sans_cotisation }} joueur{{ 's' if nb_sans_cotisation > 1 else '' }} n'{{ 'ont' if nb_sans_cotisation > 1 else 'a' }} pas encore cotisÃ© ce mois.</strong>
+</div>
+{% endif %}
+
+{% if prochains_matchs %}
+{% for match in prochains_matchs %}
+<div class="alert alert-info d-flex align-items-center shadow-sm" role="alert">
+    <i class="fas fa-futbol me-2 fs-5"></i>
+    <strong>Match prÃ©vu : {{ match.titre }} â€” {{ match.date_evenement }} Ã  {{ match.heure }} ({{ match.lieu }})</strong>
+</div>
+{% endfor %}
+{% endif %}
+
+{% if budget_faible %}
+<div class="alert alert-danger d-flex align-items-center shadow-sm" role="alert">
+    <i class="fas fa-exclamation-circle me-2 fs-5"></i>
+    <strong>Le budget est faible ! Solde actuel : {{ "{:,.0f}".format(stats.solde) }} FC</strong>
+</div>
+{% endif %}
 <div class="row g-3">
     <div class="col-6 col-lg-4">
         <div class="card stat-card border-0 shadow-sm">
