@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Modifier' if budget else ('Recette' if type_op == 'recette' else 'Depense') }} - FC VAINQUEUR{% endblock %}
+{% block page_title %}<i class="fas fa-{{ 'edit' if budget else 'plus-circle' }} me-2"></i> {{ 'Modifier l\'operation' if budget else ('Ajouter une Recette' if type_op == 'recette' else 'Ajouter une Depense') }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Motif *</label>
+                        <input type="text" name="motif" class="form-control" required
+                               value="{{ data.get('motif', '') }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Montant (FC) *</label>
+                        <input type="number" name="montant" class="form-control" step="0.01" required
+                               value="{{ data.get('montant', '') }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Responsable</label>
+                        <input type="text" name="responsable" class="form-control"
+                               value="{{ data.get('responsable', '') }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Date *</label>
+                        <input type="date" name="date_operation" class="form-control" required
+                               value="{{ data.get('date_operation', '') }}">
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit"
+                                class="btn {{ 'btn-success' if type_op == 'recette' else 'btn-danger' }} flex-fill">
+                            <i class="fas fa-save me-1"></i> Enregistrer
+                        </button>
+                        <a href="{{ url_for('budget.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i> Annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
