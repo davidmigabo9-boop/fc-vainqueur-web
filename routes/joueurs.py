@@ -33,6 +33,12 @@ def _save_photo(file, joueur_id=None):
 @login_required
 @role_required("joueurs_voir")
 def index():
+    if current_user.role == "lecteur":
+        if current_user.joueur_id:
+            return redirect(url_for("joueurs.fiche", joueur_id=current_user.joueur_id))
+        joueurs = Joueur.active_joueurs()
+        return render_template("joueurs/index.html", joueurs=joueurs, terme="", page="joueurs",
+                               lien_requis=True)
     terme = request.args.get("q", "").strip()
     if terme:
         joueurs = Joueur.search(terme)
@@ -70,10 +76,30 @@ def ajouter():
 @login_required
 @role_required("joueurs_voir")
 def fiche(joueur_id):
+    if current_user.role == "lecteur" and current_user.joueur_id != joueur_id:
+        flash("Vous ne pouvez voir que votre propre fiche.", "warning")
+        if current_user.joueur_id:
+            return redirect(url_for("joueurs.fiche", joueur_id=current_user.joueur_id))
+        return redirect(url_for("joueurs.index"))
     joueur = Joueur.query.get_or_404(joueur_id)
     contributions = Contribution.query.filter_by(joueur_id=joueur_id).order_by(Contribution.date_contribution.desc()).all()
     total = joueur.total_contributions()
     return render_template("joueurs/fiche.html", joueur=joueur, contributions=contributions, total=total, page="joueurs")
+
+
+@joueurs_bp.route("/lier/<int:joueur_id>", methods=["POST"])
+@login_required
+def lier_compte(joueur_id):
+    if current_user.role != "lecteur":
+        flash("Seuls les lecteurs peuvent lier leur compte.", "warning")
+        return redirect(url_for("joueurs.index"))
+    joueur = Joueur.query.get_or_404(joueur_id)
+    current_user.joueur_id = joueur_id
+    db.session.commit()
+    AuditLog.log(current_user.id, current_user.username, current_user.role,
+                 "Lien compte-joueur", f"Compte lie au joueur : {joueur.prenom} {joueur.nom}")
+    flash(f"Votre compte est lie a {joueur.prenom} {joueur.nom}.", "success")
+    return redirect(url_for("joueurs.fiche", joueur_id=joueur_id))
 
 
 @joueurs_bp.route("/<int:joueur_id>/modifier", methods=["GET", "POST"])
