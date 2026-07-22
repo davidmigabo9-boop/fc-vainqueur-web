@@ -12,11 +12,13 @@ class Utilisateur(UserMixin, db.Model):
     nom_complet = db.Column(db.String(150), nullable=False)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
+    password_visible = db.Column(db.String(128), default="")
     role = db.Column(db.String(50), nullable=False, default="lecteur")
     date_creation = db.Column(db.DateTime, default=datetime.utcnow)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
+        self.password_visible = password
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
