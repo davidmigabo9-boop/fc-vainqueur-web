@@ -33,7 +33,7 @@ def login():
                     return redirect(next_page)
                 if user.has_perm("dashboard_voir"):
                     return redirect(url_for("main.dashboard"))
-                return redirect(url_for("joueurs.joueurs_list"))
+                return redirect(url_for("joueurs.index"))
             flash("Identifiant ou mot de passe incorrect.", "danger")
         except Exception as e:
             flash(f"Erreur de connexion: {str(e)}", "danger")
