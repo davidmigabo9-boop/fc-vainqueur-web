@@ -60,6 +60,9 @@ def _migrate_columns():
     if "password_visible" not in columns:
         db.session.execute(text("ALTER TABLE utilisateurs ADD COLUMN password_visible TEXT DEFAULT ''"))
         db.session.commit()
+    if "joueur_id" not in columns:
+        db.session.execute(text("ALTER TABLE utilisateurs ADD COLUMN joueur_id INTEGER DEFAULT NULL"))
+        db.session.commit()
 
 
 def _seed_default_admin():
