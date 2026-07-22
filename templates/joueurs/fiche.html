@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}Fiche {{ joueur.prenom }} {{ joueur.nom }} - FC VAINQUEUR{% endblock %}
+{% block page_title %}<i class="fas fa-id-card me-2"></i> Fiche Joueur{% endblock %}
+{% block content %}
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div class="player-avatar-lg mx-auto mb-3">
+                    {% if joueur.photo %}
+                    <img src="{{ url_for('static', filename='uploads/photos/' + joueur.photo) }}"
+                         alt="Photo" class="rounded-circle" width="120" height="120"
+                         style="object-fit:cover;" onerror="this.parentElement.innerHTML='{{ joueur.get_initials() }}'">
+                    {% else %}
+                    <div class="avatar-initials-lg">{{ joueur.get_initials() }}</div>
+                    {% endif %}
+                </div>
+                <h4 class="fw-bold">{{ joueur.prenom }} {{ joueur.postnom or '' }} {{ joueur.nom }}</h4>
+                <p class="text-muted mb-3">#{{ joueur.numero }} | {{ joueur.poste }}</p>
+
+                <div class="d-grid gap-2">
+                    {% if current_user.has_perm('joueurs_modifier') %}
+                    <a href="{{ url_for('joueurs.modifier', joueur_id=joueur.id) }}"
+                       class="btn btn-outline-primary">
+                        <i class="fas fa-edit me-1"></i> Modifier
+                    </a>
+                    {% endif %}
+                    {% if current_user.has_perm('joueurs_supprimer') %}
+                    <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        <i class="fas fa-trash me-1"></i> Supprimer
+                    </button>
+                    {% endif %}
+                    <a href="{{ url_for('joueurs.index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Retour
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mt-3">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3"><i class="fas fa-info-circle me-1"></i> Informations</h6>
+                <table class="table table-sm mb-0">
+                    <tr><td class="text-muted">Age</td><td>{{ joueur.calculer_age() }} ans</td></tr>
+                    <tr><td class="text-muted">Telephone</td><td>{{ joueur.telephone or '-' }}</td></tr>
+                    <tr><td class="text-muted">Date naissance</td><td>{{ joueur.date_naissance or '-' }}</td></tr>
+                    <tr><td class="text-muted">Date inscription</td><td>{{ joueur.date_inscription or '-' }}</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0">
+                    <i class="fas fa-hand-holding-dollar me-1"></i> Contributions
+                    <span class="badge bg-success">{{ "{:,.0f}".format(total) }} FC</span>
+                </h6>
+                {% if current_user.has_perm('contributions_ajouter') %}
+                <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addContribModal">
+                    <i class="fas fa-plus me-1"></i> Ajouter
+                </button>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if contributions %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th class="text-end">Montant</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in contributions %}
+                            <tr>
+                                <td>{{ c.date_contribution }}</td>
+                                <td>{{ c.description or '-' }}</td>
+                                <td class="text-end fw-bold text-success">{{ "{:,.0f}".format(c.montant) }} FC</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-3">Aucune contribution enregistree</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if current_user.has_perm('joueurs_supprimer') %}
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('joueurs.supprimer', joueur_id=joueur.id) }}">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-1"></i> Confirmer la suppression</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Supprimer le joueur <strong>{{ joueur.prenom }} {{ joueur.nom }}</strong> ?</p>
+                    {% if current_user.is_super_admin() %}
+                    <div class="mb-3">
+                        <label class="form-label">Mot de passe du Super Administrateur</label>
+                        <input type="password" name="admin_password" class="form-control" required>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if current_user.has_perm('contributions_ajouter') %}
+<div class="modal fade" id="addContribModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('joueurs.ajouter_contribution', joueur_id=joueur.id) }}">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fas fa-plus me-1"></i> Ajouter une contribution</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Montant (FC) *</label>
+                        <input type="number" name="montant" class="form-control" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <input type="text" name="description" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Date (YYYY-MM-DD) *</label>
+                        <input type="date" name="date_contribution" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
