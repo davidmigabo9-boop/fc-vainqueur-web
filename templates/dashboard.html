@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord - FC VAINQUEUR{% endblock %}
+{% block page_title %}<i class="fas fa-chart-line me-2"></i> Tableau de bord{% endblock %}
+{% block content %}
+<div class="row g-3">
+    <div class="col-6 col-lg-4">
+        <div class="card stat-card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="stat-icon bg-success bg-opacity-10 text-success mx-auto mb-2">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="fw-bold mb-0">{{ stats.total_joueurs }}</h3>
+                <small class="text-muted">Total Joueurs</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4">
+        <div class="card stat-card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="stat-icon bg-primary bg-opacity-10 text-primary mx-auto mb-2">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <h3 class="fw-bold mb-0 {% if stats.solde >= 0 %}text-success{% else %}text-danger{% endif %}">
+                    {{ "{:,.0f}".format(stats.solde) }} FC
+                </h3>
+                <small class="text-muted">Solde Budget</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4">
+        <div class="card stat-card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="stat-icon bg-info bg-opacity-10 text-info mx-auto mb-2">
+                    <i class="fas fa-shirt"></i>
+                </div>
+                <h3 class="fw-bold mb-0">{{ stats.total_equipements }}</h3>
+                <small class="text-muted">Equipements</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4">
+        <div class="card stat-card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="stat-icon bg-warning bg-opacity-10 text-warning mx-auto mb-2">
+                    <i class="fas fa-hand-holding-dollar"></i>
+                </div>
+                <h3 class="fw-bold mb-0">{{ "{:,.0f}".format(stats.total_contributions) }} FC</h3>
+                <small class="text-muted">Total Contributions</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4">
+        <div class="card stat-card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="stat-icon bg-danger bg-opacity-10 text-danger mx-auto mb-2">
+                    <i class="fas fa-arrow-down"></i>
+                </div>
+                <h3 class="fw-bold mb-0 text-danger">{{ "{:,.0f}".format(stats.depenses_mois) }} FC</h3>
+                <small class="text-muted">Depenses du mois</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4">
+        <div class="card stat-card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="stat-icon bg-success bg-opacity-10 text-success mx-auto mb-2">
+                    <i class="fas fa-arrow-up"></i>
+                </div>
+                <h3 class="fw-bold mb-0 text-success">{{ "{:,.0f}".format(stats.recettes_mois) }} FC</h3>
+                <small class="text-muted">Recettes du mois</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if recent_logs %}
+<div class="card border-0 shadow-sm mt-4">
+    <div class="card-header bg-white">
+        <h6 class="fw-bold mb-0"><i class="fas fa-clipboard-list me-1"></i> Activite recente</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <tbody>
+                    {% for log in recent_logs %}
+                    <tr>
+                        <td class="small text-muted" style="width:140px">{{ log.timestamp.strftime('%d/%m %H:%M') if log.timestamp else '' }}</td>
+                        <td class="small fw-bold">{{ log.username }}</td>
+                        <td class="small">{{ log.action }}</td>
+                        <td class="small text-muted">{{ (log.details or '')[:60] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
