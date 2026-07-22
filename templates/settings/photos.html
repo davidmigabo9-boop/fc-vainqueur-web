@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Photos - FC VAINQUEUR{% endblock %}
+{% block page_title %}<i class="fas fa-camera me-2"></i> Photos de la page publique{% endblock %}
+{% block content %}
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h6 class="fw-bold mb-0"><i class="fas fa-upload me-1"></i> Ajouter une photo</h6>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('settings.ajouter_photo') }}" enctype="multipart/form-data">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label small text-muted">Photo</label>
+                    <input type="file" name="photo" class="form-control form-control-sm"
+                           accept="image/*" required id="photoInput">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Titre (optionnel)</label>
+                    <input type="text" name="titre" class="form-control form-control-sm"
+                           placeholder="Titre de la photo">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-success btn-sm w-100">
+                        <i class="fas fa-upload me-1"></i> Ajouter
+                    </button>
+                </div>
+            </div>
+            <div class="mt-2" id="preview" style="display:none;">
+                <img id="previewImg" src="" class="rounded" style="max-height:150px;">
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white">
+        <h6 class="fw-bold mb-0"><i class="fas fa-images me-1"></i> Photos existantes ({{ photos|length }})</h6>
+    </div>
+    <div class="card-body">
+        {% if photos %}
+        <div class="row g-3">
+            {% for p in photos %}
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <img src="{{ url_for('static', filename='uploads/photos/' + p.filename) }}"
+                         alt="{{ p.titre }}" class="card-img-top"
+                         style="height:180px; object-fit:cover;"
+                         onerror="this.src='https://via.placeholder.com/300x200?text=Error'">
+                    <div class="card-body p-2">
+                        <p class="card-text small text-muted mb-2">{{ p.titre or 'Sans titre' }}</p>
+                        <form method="POST" action="{{ url_for('settings.supprimer_photo', photo_id=p.id) }}"
+                              onsubmit="return confirm('Supprimer cette photo ?')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                                <i class="fas fa-trash me-1"></i> Supprimer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-images fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Aucune photo. Ajoutez des photos pour la page publique.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="{{ url_for('settings.index') }}" class="btn btn-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i> Retour
+    </a>
+    <a href="{{ url_for('main.home') }}" class="btn btn-outline-success btn-sm" target="_blank">
+        <i class="fas fa-external-link-alt me-1"></i> Voir la page publique
+    </a>
+</div>
+
+<script>
+document.getElementById('photoInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            document.getElementById('previewImg').src = ev.target.result;
+            document.getElementById('preview').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+
+{% endblock %}
