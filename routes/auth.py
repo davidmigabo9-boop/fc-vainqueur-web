@@ -29,6 +29,37 @@ def login():
     return render_template("login.html")
 
 
+@auth_bp.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        nom_complet = request.form.get("nom_complet", "").strip()
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "").strip()
+        if not nom_complet or not username or not password:
+            flash("Veuillez remplir tous les champs.", "warning")
+            return render_template("register.html")
+        if Utilisateur.query.filter_by(username=username).first():
+            flash("Ce nom d'utilisateur existe deja.", "danger")
+            return render_template("register.html")
+        user = Utilisateur(
+            nom_complet=nom_complet,
+            username=username,
+            role="lecteur",
+        )
+        user.set_password(password)
+        from extensions import db
+        db.session.add(user)
+        db.session.commit()
+        AuditLog.log(
+            user.id, user.username, user.role,
+            "Inscription",
+            f"Inscription automatique - Role: Lecteur",
+        )
+        flash("Compte cree! Connectez-vous.", "success")
+        return redirect(url_for("auth.login"))
+    return render_template("register.html")
+
+
 @auth_bp.route("/logout")
 @login_required
 def logout():
