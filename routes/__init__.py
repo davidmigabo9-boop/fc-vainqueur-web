@@ -11,7 +11,9 @@ def role_required(permission):
                 return redirect(url_for("auth.login"))
             if not current_user.has_perm(permission):
                 flash("Vous n'avez pas les droits pour acceder a cette page.", "danger")
-                return redirect(url_for("main.dashboard"))
+                if current_user.has_perm("dashboard_voir"):
+                    return redirect(url_for("main.dashboard"))
+                return redirect(url_for("joueurs.joueurs_list"))
             return f(*args, **kwargs)
         return decorated_function
     return decorator
