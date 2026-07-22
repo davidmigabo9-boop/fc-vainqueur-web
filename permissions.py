@@ -40,7 +40,6 @@ PERMISSIONS = {
     },
     "lecteur": {
         "joueurs_voir", "joueurs_exporter",
-        "equipements_voir",
     },
 }
 
