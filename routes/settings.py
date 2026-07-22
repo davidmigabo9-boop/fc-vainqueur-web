@@ -151,3 +151,49 @@ def _list_backups():
         size = os.path.getsize(path)
         backups.append({"name": f, "size": f"{size / 1024:.1f} KB"})
     return backups
+
+
+@settings_bp.route("/programmes")
+@login_required
+@role_required("parametres_modifier")
+def programmes():
+    from models.programme import Programme
+    progs = Programme.query.order_by(Programme.date_evenement.desc()).all()
+    return render_template("settings/programmes.html", programmes=progs, page="settings")
+
+
+@settings_bp.route("/programmes/ajouter", methods=["POST"])
+@login_required
+@role_required("parametres_modifier")
+def ajouter_programme():
+    from models.programme import Programme
+    titre = request.form.get("titre", "").strip()
+    lieu = request.form.get("lieu", "").strip()
+    date_evt = request.form.get("date_evenement", "").strip()
+    heure = request.form.get("heure", "").strip()
+    description = request.form.get("description", "").strip()
+    if not titre or not lieu or not date_evt or not heure:
+        flash("Tous les champs sont obligatoires.", "warning")
+        return redirect(url_for("settings.programmes"))
+    p = Programme(titre=titre, lieu=lieu, date_evenement=date_evt, heure=heure, description=description)
+    db.session.add(p)
+    db.session.commit()
+    AuditLog.log(current_user.id, current_user.username, current_user.role,
+                 "Ajout programme", f"Programme ajoute : {titre} le {date_evt}")
+    flash("Programme ajoute avec succes.", "success")
+    return redirect(url_for("settings.programmes"))
+
+
+@settings_bp.route("/programmes/supprimer/<int:prog_id>", methods=["POST"])
+@login_required
+@role_required("parametres_modifier")
+def supprimer_programme(prog_id):
+    from models.programme import Programme
+    p = Programme.query.get_or_404(prog_id)
+    titre = p.titre
+    db.session.delete(p)
+    db.session.commit()
+    AuditLog.log(current_user.id, current_user.username, current_user.role,
+                 "Suppression programme", f"Programme supprime : {titre}")
+    flash("Programme supprime.", "success")
+    return redirect(url_for("settings.programmes"))
