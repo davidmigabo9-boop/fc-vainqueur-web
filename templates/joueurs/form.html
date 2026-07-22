@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Modifier' if joueur else 'Ajouter' }} Joueur - FC VAINQUEUR{% endblock %}
+{% block page_title %}<i class="fas fa-user-edit me-2"></i> {{ 'Modifier le joueur' if joueur else 'Ajouter un joueur' }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-3 text-center">
+                        <label class="form-label fw-bold">Photo du joueur</label>
+                        <div>
+                            <input type="file" name="photo" accept="image/*" class="form-control">
+                        </div>
+                        {% if joueur and joueur.photo %}
+                        <img src="{{ url_for('static', filename='uploads/photos/' + joueur.photo) }}"
+                             alt="Photo actuelle" class="rounded-circle mt-2" width="80" height="80"
+                             style="object-fit:cover;">
+                        {% endif %}
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nom *</label>
+                            <input type="text" name="nom" class="form-control"
+                                   value="{{ data.get('nom', joueur.nom if joueur else '') }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Postnom</label>
+                            <input type="text" name="postnom" class="form-control"
+                                   value="{{ data.get('postnom', joueur.postnom if joueur else '') }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Prenom *</label>
+                            <input type="text" name="prenom" class="form-control"
+                                   value="{{ data.get('prenom', joueur.prenom if joueur else '') }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Numero de maillot</label>
+                            <input type="number" name="numero" class="form-control"
+                                   value="{{ data.get('numero', joueur.numero if joueur else 0) }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Poste</label>
+                            <select name="poste" class="form-select">
+                                {% set current_poste = data.get('poste', joueur.poste if joueur else 'Milieu') %}
+                                <option value="Gardien" {{ 'selected' if current_poste == 'Gardien' }}>Gardien</option>
+                                <option value="Defenseur" {{ 'selected' if current_poste == 'Defenseur' }}>Defenseur</option>
+                                <option value="Milieu" {{ 'selected' if current_poste == 'Milieu' }}>Milieu</option>
+                                <option value="Attaquant" {{ 'selected' if current_poste == 'Attaquant' }}>Attaquant</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date de naissance</label>
+                            <input type="date" name="date_naissance" class="form-control"
+                                   value="{{ data.get('date_naissance', joueur.date_naissance if joueur else '') }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Telephone</label>
+                            <input type="text" name="telephone" class="form-control"
+                                   value="{{ data.get('telephone', joueur.telephone if joueur else '') }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date d'inscription</label>
+                            <input type="date" name="date_inscription" class="form-control"
+                                   value="{{ data.get('date_inscription', joueur.date_inscription if joueur else '') }}">
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-success flex-fill">
+                            <i class="fas fa-save me-1"></i> Enregistrer
+                        </button>
+                        <a href="{{ url_for('joueurs.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i> Annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
