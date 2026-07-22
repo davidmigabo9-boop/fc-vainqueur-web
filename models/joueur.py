@@ -57,6 +57,21 @@ class Joueur(db.Model):
         return Joueur.query.filter_by(actif=1).count()
 
     @staticmethod
+    def sans_contribution_mois(mois, annee):
+        from sqlalchemy import func
+        joueurs_actifs = Joueur.query.filter_by(actif=1).all()
+        sans = []
+        for j in joueurs_actifs:
+            total = db.session.query(func.sum(Contribution.montant)).filter(
+                Contribution.joueur_id == j.id,
+                db.extract("month", Contribution.date_contribution) == mois,
+                db.extract("year", Contribution.date_contribution) == annee,
+            ).scalar()
+            if not total:
+                sans.append(j)
+        return sans
+
+    @staticmethod
     def active_joueurs():
         return Joueur.query.filter_by(actif=1).order_by(Joueur.nom, Joueur.prenom).all()
 
