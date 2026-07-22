@@ -35,7 +35,7 @@ PERMISSIONS = {
         "dashboard_voir",
     },
     "entraineur": {
-        "joueurs_voir", "joueurs_exporter",
+        "joueurs_voir", "joueurs_modifier", "joueurs_exporter",
         "dashboard_voir",
     },
     "lecteur": {
