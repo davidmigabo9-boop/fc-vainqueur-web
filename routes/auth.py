@@ -9,15 +9,6 @@ from werkzeug.security import check_password_hash
 auth_bp = Blueprint("auth", __name__)
 
 
-@auth_bp.route("/debug-users")
-def debug_users():
-    users = Utilisateur.query.all()
-    result = []
-    for u in users:
-        result.append(f"{u.username} | role={u.role} | hash={u.password_hash[:60]} | pw_vis={u.password_visible}")
-    return "<br>".join(result)
-
-
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
