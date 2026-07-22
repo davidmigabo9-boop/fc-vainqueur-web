@@ -4,10 +4,18 @@ from models.joueur import Joueur, Contribution
 from models.budget import Budget
 from models.equipement import Equipement
 from models.audit import AuditLog
+from models.programme import Programme
 from datetime import datetime
 from routes import role_required
 
 main_bp = Blueprint("main", __name__)
+
+
+@main_bp.route("/home")
+def home():
+    programmes = Programme.get_upcoming()
+    joueurs = Joueur.active_joueurs()
+    return render_template("public/home.html", programmes=programmes, joueurs=joueurs)
 
 
 @main_bp.route("/")
