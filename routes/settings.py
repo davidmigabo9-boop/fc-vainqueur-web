@@ -122,6 +122,23 @@ def restaurer(filename):
     return redirect(url_for("auth.logout"))
 
 
+@settings_bp.route("/reset-password/<int:user_id>", methods=["POST"])
+@login_required
+@role_required("parametres_modifier")
+def reset_password(user_id):
+    user = Utilisateur.query.get_or_404(user_id)
+    new_password = request.form.get("new_password", "").strip()
+    if not new_password:
+        flash("Le mot de passe ne peut pas etre vide.", "warning")
+        return redirect(url_for("settings.index"))
+    user.set_password(new_password)
+    db.session.commit()
+    AuditLog.log(current_user.id, current_user.username, current_user.role,
+                 "Modification mot de passe", f"Mot de passe de {user.username} modifie")
+    flash(f"Mot de passe de {user.username} mis a jour.", "success")
+    return redirect(url_for("settings.index"))
+
+
 def _list_backups():
     folder = current_app.config["BACKUPS_FOLDER"]
     try:
