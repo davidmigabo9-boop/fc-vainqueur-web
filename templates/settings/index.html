@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block title %}Parametres - FC VAINQUEUR{% endblock %}
+{% block page_title %}<i class="fas fa-cog me-2"></i> Parametres{% endblock %}
+{% block content %}
+
+{% if current_user.has_perm('utilisateurs_voir') %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h6 class="fw-bold mb-0"><i class="fas fa-users-cog me-1"></i> Gestion des utilisateurs</h6>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('settings.ajouter_utilisateur') }}" class="mb-4">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <input type="text" name="nom" class="form-control form-control-sm" placeholder="Nom complet" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="text" name="username" class="form-control form-control-sm" placeholder="Identifiant" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="password" name="password" class="form-control form-control-sm" placeholder="Mot de passe" required>
+                </div>
+                <div class="col-md-2">
+                    <select name="role" class="form-select form-select-sm">
+                        {% for key, label in roles.items() %}
+                        <option value="{{ label }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-success btn-sm w-100">
+                        <i class="fas fa-plus me-1"></i> Ajouter
+                    </button>
+                </div>
+            </div>
+            {% if current_user.is_super_admin() %}
+            <div class="mt-2">
+                <input type="password" name="admin_password" class="form-control form-control-sm"
+                       placeholder="Mot de passe Super Admin (requis)" style="max-width:300px;">
+            </div>
+            {% endif %}
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nom</th>
+                        <th>Identifiant</th>
+                        <th>Role</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set role_colors = {'super_administrateur': 'warning', 'administrateur': 'success', 'tresorier': 'primary', 'entraineur': 'info', 'lecteur': 'secondary'} %}
+                    {% for u in users %}
+                    <tr>
+                        <td class="fw-bold">{{ u.nom_complet }}</td>
+                        <td>{{ u.username }}</td>
+                        <td><span class="badge bg-{{ role_colors.get(u.role, 'secondary') }}">{{ u.role_label }}</span></td>
+                        <td>
+                            {% if u.username != 'admin' and current_user.has_perm('utilisateurs_supprimer') %}
+                            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                                    data-bs-target="#deleteUserModal{{ u.id }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <div class="modal fade" id="deleteUserModal{{ u.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-sm">
+                                    <div class="modal-content">
+                                        <form method="POST" action="{{ url_for('settings.supprimer_utilisateur', user_id=u.id) }}">
+                                            <div class="modal-body">
+                                                <p>Supprimer <strong>{{ u.username }}</strong> ?</p>
+                                                {% if current_user.is_super_admin() %}
+                                                <input type="password" name="admin_password" class="form-control form-control-sm"
+                                                       placeholder="Mot de passe Admin" required>
+                                                {% endif %}
+                                            </div>
+                                            <div class="modal-footer py-1">
+                                                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Non</button>
+                                                <button type="submit" class="btn btn-sm btn-danger">Oui</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if current_user.has_perm('sauvegarde_creer') %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h6 class="fw-bold mb-0"><i class="fas fa-database me-1"></i> Sauvegarde & Restauration</h6>
+    </div>
+    <div class="card-body">
+        <div class="d-flex gap-2 mb-3">
+            <form method="POST" action="{{ url_for('settings.sauvegarder') }}">
+                <button type="submit" class="btn btn-success btn-sm">
+                    <i class="fas fa-download me-1"></i> Sauvegarder la base
+                </button>
+            </form>
+        </div>
+        {% if backups %}
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead class="table-light">
+                    <tr><th>Fichier</th><th>Taille</th><th></th></tr>
+                </thead>
+                <tbody>
+                    {% for b in backups %}
+                    <tr>
+                        <td>{{ b.name }}</td>
+                        <td>{{ b.size }}</td>
+                        <td>
+                            {% if current_user.has_perm('sauvegarde_restaurer') %}
+                            <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal"
+                                    data-bs-target="#restoreModal{{ loop.index }}">
+                                <i class="fas fa-undo me-1"></i> Restaurer
+                            </button>
+                            <div class="modal fade" id="restoreModal{{ loop.index }}" tabindex="-1">
+                                <div class="modal-dialog modal-sm">
+                                    <div class="modal-content">
+                                        <form method="POST" action="{{ url_for('settings.restaurer', filename=b.name) }}">
+                                            <div class="modal-body">
+                                                <p>Restaurer <strong>{{ b.name }}</strong> ?</p>
+                                                <p class="text-danger small">La base actuelle sera remplacee.</p>
+                                                {% if current_user.is_super_admin() %}
+                                                <input type="password" name="admin_password" class="form-control form-control-sm"
+                                                       placeholder="Mot de passe Admin" required>
+                                                {% endif %}
+                                            </div>
+                                            <div class="modal-footer py-1">
+                                                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Non</button>
+                                                <button type="submit" class="btn btn-sm btn-warning">Oui</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">Aucune sauvegarde disponible</p>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% if current_user.has_perm('audit_voir') %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h6 class="fw-bold mb-0"><i class="fas fa-clipboard-list me-1"></i> Journal d'audit</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Utilisateur</th>
+                        <th>Action</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in audit_logs %}
+                    <tr>
+                        <td class="small">{{ log.timestamp.strftime('%Y-%m-%d %H:%M') if log.timestamp else '' }}</td>
+                        <td class="fw-bold small">{{ log.username }}</td>
+                        <td class="small">{{ log.action }}</td>
+                        <td class="small text-muted">{{ (log.details or '')[:80] }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if not audit_logs %}
+                    <tr><td colspan="4" class="text-center text-muted py-3">Aucun journal</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
