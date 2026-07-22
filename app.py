@@ -18,10 +18,11 @@ def create_app(config_name="development"):
     def inject_now():
         return {"now": datetime.now()}
 
+    data_dir = app.config.get("DATA_DIR", os.path.join(app.root_path, "instance"))
+    os.makedirs(data_dir, exist_ok=True)
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
     os.makedirs(app.config["EXPORTS_FOLDER"], exist_ok=True)
     os.makedirs(app.config["BACKUPS_FOLDER"], exist_ok=True)
-    os.makedirs(os.path.join(app.root_path, "instance"), exist_ok=True)
 
     db.init_app(app)
     login_manager.init_app(app)
@@ -86,4 +87,5 @@ def _seed_default_admin():
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=True, host="0.0.0.0", port=port)
