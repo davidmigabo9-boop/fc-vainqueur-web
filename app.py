@@ -7,6 +7,7 @@ from extensions import db, login_manager
 from flask import Flask
 from config import config
 from datetime import datetime
+from sqlalchemy import inspect, text
 
 
 def create_app(config_name="development"):
@@ -47,12 +48,21 @@ def create_app(config_name="development"):
 
     with app.app_context():
         db.create_all()
-        _seed_default_admin(app)
+        _migrate_columns()
+        _seed_default_admin()
 
     return app
 
 
-def _seed_default_admin(app):
+def _migrate_columns():
+    inspector = inspect(db.engine)
+    columns = [c["name"] for c in inspector.get_columns("utilisateurs")]
+    if "password_visible" not in columns:
+        db.session.execute(text("ALTER TABLE utilisateurs ADD COLUMN password_visible TEXT DEFAULT ''"))
+        db.session.commit()
+
+
+def _seed_default_admin():
     from models.user import Utilisateur
     admin = Utilisateur.query.filter_by(username="admin").first()
     if not admin:
@@ -68,12 +78,6 @@ def _seed_default_admin(app):
         if not admin.password_visible:
             admin.password_visible = "Justin.09"
             db.session.commit()
-
-    try:
-        db.session.execute(db.text("ALTER TABLE utilisateurs ADD COLUMN password_visible TEXT DEFAULT ''"))
-        db.session.commit()
-    except Exception:
-        pass
 
 
 app = create_app()
