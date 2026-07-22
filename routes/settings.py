@@ -197,3 +197,57 @@ def supprimer_programme(prog_id):
                  "Suppression programme", f"Programme supprime : {titre}")
     flash("Programme supprime.", "success")
     return redirect(url_for("settings.programmes"))
+
+
+@settings_bp.route("/photos")
+@login_required
+@role_required("parametres_modifier")
+def photos():
+    from models.photo import Photo
+    all_photos = Photo.get_all()
+    return render_template("settings/photos.html", photos=all_photos, page="settings")
+
+
+@settings_bp.route("/photos/ajouter", methods=["POST"])
+@login_required
+@role_required("parametres_modifier")
+def ajouter_photo():
+    from models.photo import Photo
+    from werkzeug.utils import secure_filename
+    import uuid
+    file = request.files.get("photo")
+    titre = request.form.get("titre", "").strip()
+    if not file or not file.filename:
+        flash("Veuillez selectionner une photo.", "warning")
+        return redirect(url_for("settings.photos"))
+    ext = file.filename.rsplit(".", 1)[-1].lower()
+    if ext not in {"png", "jpg", "jpeg", "gif", "bmp", "webp"}:
+        flash("Format non supporte.", "warning")
+        return redirect(url_for("settings.photos"))
+    filename = f"pub_{uuid.uuid4().hex[:8]}.{ext}"
+    filepath = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
+    file.save(filepath)
+    photo = Photo(filename=filename, titre=titre)
+    db.session.add(photo)
+    db.session.commit()
+    AuditLog.log(current_user.id, current_user.username, current_user.role,
+                 "Ajout photo", f"Photo publique ajoutee : {filename}")
+    flash("Photo ajoutee avec succes.", "success")
+    return redirect(url_for("settings.photos"))
+
+
+@settings_bp.route("/photos/supprimer/<int:photo_id>", methods=["POST"])
+@login_required
+@role_required("parametres_modifier")
+def supprimer_photo(photo_id):
+    from models.photo import Photo
+    p = Photo.query.get_or_404(photo_id)
+    filepath = os.path.join(current_app.config["UPLOAD_FOLDER"], p.filename)
+    if os.path.isfile(filepath):
+        os.remove(filepath)
+    db.session.delete(p)
+    db.session.commit()
+    AuditLog.log(current_user.id, current_user.username, current_user.role,
+                 "Suppression photo", f"Photo supprimee : {p.filename}")
+    flash("Photo supprimee.", "success")
+    return redirect(url_for("settings.photos"))
