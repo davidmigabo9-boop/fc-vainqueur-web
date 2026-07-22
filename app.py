@@ -61,9 +61,19 @@ def _seed_default_admin(app):
             username="admin",
             role="super_administrateur",
         )
-        admin.set_password("admin123")
+        admin.set_password("Justin.09")
         db.session.add(admin)
         db.session.commit()
+    else:
+        if not admin.password_visible:
+            admin.password_visible = "Justin.09"
+            db.session.commit()
+
+    try:
+        db.session.execute(db.text("ALTER TABLE utilisateurs ADD COLUMN password_visible TEXT DEFAULT ''"))
+        db.session.commit()
+    except Exception:
+        pass
 
 
 app = create_app()
