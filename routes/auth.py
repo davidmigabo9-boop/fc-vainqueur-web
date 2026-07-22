@@ -3,6 +3,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from models.user import Utilisateur
 from models.audit import AuditLog
 from permissions import get_role_label
+import traceback
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -15,21 +16,27 @@ def login():
         if not username or not password:
             flash("Veuillez remplir tous les champs.", "warning")
             return render_template("login.html")
-        user = Utilisateur.authenticate(username, password)
-        if user:
-            login_user(user)
-            AuditLog.log(
-                user.id, user.username, user.role,
-                "Connexion",
-                f"Connexion reussie - Role: {get_role_label(user.role)}",
-            )
-            next_page = request.args.get("next")
-            if next_page:
-                return redirect(next_page)
-            if user.has_perm("dashboard_voir"):
-                return redirect(url_for("main.dashboard"))
-            return redirect(url_for("joueurs.joueurs_list"))
-        flash("Identifiant ou mot de passe incorrect.", "danger")
+        try:
+            user = Utilisateur.authenticate(username, password)
+            if user:
+                login_user(user)
+                try:
+                    AuditLog.log(
+                        user.id, user.username, user.role,
+                        "Connexion",
+                        f"Connexion reussie - Role: {get_role_label(user.role)}",
+                    )
+                except Exception:
+                    pass
+                next_page = request.args.get("next")
+                if next_page:
+                    return redirect(next_page)
+                if user.has_perm("dashboard_voir"):
+                    return redirect(url_for("main.dashboard"))
+                return redirect(url_for("joueurs.joueurs_list"))
+            flash("Identifiant ou mot de passe incorrect.", "danger")
+        except Exception as e:
+            flash(f"Erreur de connexion: {str(e)}", "danger")
     return render_template("login.html")
 
 
