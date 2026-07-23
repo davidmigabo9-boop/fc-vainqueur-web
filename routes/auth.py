@@ -44,6 +44,7 @@ def selfie():
         import uuid
         from flask import current_app
         file = request.files.get("selfie")
+        selfie_fn = ""
         if file and file.filename:
             ext = file.filename.rsplit(".", 1)[-1].lower()
             if ext in {"png", "jpg", "jpeg", "gif", "webp"}:
@@ -51,22 +52,49 @@ def selfie():
                 selfie_dir = os.path.join(current_app.root_path, "static", "uploads", "selfies")
                 os.makedirs(selfie_dir, exist_ok=True)
                 file.save(os.path.join(selfie_dir, filename))
-                from models.login_attempt import LoginAttempt
-                attempt = LoginAttempt(
-                    user_id=current_user.id,
-                    username=current_user.username,
-                    selfie_filename=filename,
-                    ip_address=request.remote_addr or "",
-                    user_agent=str(request.user_agent)[:300],
-                    statut="autorise",
-                    vue_par_admin=0,
-                )
-                db.session.add(attempt)
-                db.session.commit()
-        if current_user.has_perm("dashboard_voir"):
-            return redirect(url_for("main.dashboard"))
-        return redirect(url_for("joueurs.index"))
+                selfie_fn = filename
+        from models.login_attempt import LoginAttempt
+        attempt = LoginAttempt(
+            user_id=current_user.id,
+            username=current_user.username,
+            selfie_filename=selfie_fn,
+            ip_address=request.remote_addr or "",
+            user_agent=str(request.user_agent)[:300],
+            statut="en_attente",
+            vue_par_admin=0,
+        )
+        db.session.add(attempt)
+        db.session.commit()
+        logout_user()
+        flash("Votre selfie est en attente de verification par l'administrateur.", "info")
+        return redirect(url_for("auth.waiting", attempt_id=attempt.id))
     return render_template("selfie.html")
+
+
+@auth_bp.route("/waiting/<int:attempt_id>")
+def waiting(attempt_id):
+    return render_template("waiting.html", attempt_id=attempt_id)
+
+
+@auth_bp.route("/check-status/<int:attempt_id>")
+def check_status(attempt_id):
+    from models.login_attempt import LoginAttempt
+    attempt = LoginAttempt.query.get(attempt_id)
+    if not attempt:
+        return {"status": "introuvable"}
+    if attempt.statut == "autorise":
+        user = Utilisateur.query.get(attempt.user_id)
+        if user:
+            login_user(user)
+            try:
+                AuditLog.log(user.id, user.username, user.role,
+                             "Connexion autorisee", "Selfie verifie par l'admin")
+            except Exception:
+                pass
+            if user.has_perm("dashboard_voir"):
+                return {"status": "autorise", "redirect": "/dashboard"}
+            return {"status": "autorise", "redirect": "/joueurs"}
+    return {"status": attempt.statut}
 
 
 @auth_bp.route("/register", methods=["GET", "POST"])
