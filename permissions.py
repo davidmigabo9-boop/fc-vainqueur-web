@@ -15,6 +15,7 @@ PERMISSIONS = {
         "budget_voir", "budget_ajouter", "budget_supprimer", "budget_exporter",
         "equipements_voir", "equipements_ajouter", "equipements_modifier", "equipements_supprimer",
         "equipements_exporter",
+        "feuilles_voir", "feuilles_ajouter", "feuilles_modifier", "feuilles_supprimer",
         "dashboard_voir",
         "parametres_voir", "parametres_modifier",
         "utilisateurs_voir", "utilisateurs_ajouter", "utilisateurs_supprimer",
@@ -36,6 +37,7 @@ PERMISSIONS = {
     },
     "entraineur": {
         "joueurs_voir", "joueurs_modifier", "joueurs_exporter",
+        "feuilles_voir", "feuilles_ajouter", "feuilles_modifier",
         "dashboard_voir",
     },
     "lecteur": {
