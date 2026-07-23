@@ -82,7 +82,41 @@ def fiche(joueur_id):
     joueur = Joueur.query.get_or_404(joueur_id)
     contributions = Contribution.query.filter_by(joueur_id=joueur_id).order_by(Contribution.date_contribution.desc()).all()
     total = joueur.total_contributions()
-    return render_template("joueurs/fiche.html", joueur=joueur, contributions=contributions, total=total, page="joueurs")
+    from age_utils import format_age, categorie_automatique, potentiel_joueur
+    age_exact = format_age(joueur.date_naissance)
+    categorie = categorie_automatique(joueur.date_naissance)
+    potentiel = potentiel_joueur(joueur.date_naissance)
+    return render_template("joueurs/fiche.html", joueur=joueur, contributions=contributions,
+                           total=total, page="joueurs", age_exact=age_exact,
+                           categorie=categorie, potentiel=potentiel)
+
+
+@joueurs_bp.route("/<int:joueur_id>/evolution")
+@login_required
+@role_required("joueurs_voir")
+def evolution(joueur_id):
+    if current_user.role == "lecteur" and current_user.joueur_id != joueur_id:
+        flash("Vous ne pouvez voir que votre propre evolution.", "warning")
+        if current_user.joueur_id:
+            return redirect(url_for("joueurs.evolution", joueur_id=current_user.joueur_id))
+        return redirect(url_for("joueurs.index"))
+    joueur = Joueur.query.get_or_404(joueur_id)
+    from age_utils import (format_age, categorie_automatique, anniversaire_info,
+                           alerte_changement_categorie, potentiel_joueur,
+                           recommandation_joueur, annees_au_club)
+    age_exact = format_age(joueur.date_naissance)
+    categorie = categorie_automatique(joueur.date_naissance)
+    anniversaire = anniversaire_info(joueur.date_naissance)
+    alerte_categorie = alerte_changement_categorie(joueur.date_naissance)
+    potentiel = potentiel_joueur(joueur.date_naissance)
+    recommandation = recommandation_joueur(joueur.date_naissance)
+    annees_club = annees_au_club(joueur.date_inscription)
+    return render_template("joueurs/evolution.html",
+                           joueur=joueur, page="joueurs",
+                           age_exact=age_exact, categorie=categorie,
+                           anniversaire=anniversaire, alerte_categorie=alerte_categorie,
+                           potentiel=potentiel, recommandation=recommandation,
+                           annees_club=annees_club)
 
 
 @joueurs_bp.route("/lier/<int:joueur_id>", methods=["POST"])
