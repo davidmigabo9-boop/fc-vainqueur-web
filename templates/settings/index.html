@@ -125,17 +125,27 @@
 
 {% if current_user.has_perm('sauvegarde_creer') %}
 <div class="card border-0 shadow-sm mb-4">
-    <div class="card-header bg-white">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
         <h6 class="fw-bold mb-0"><i class="fas fa-database me-1"></i> Sauvegarde & Restauration</h6>
+        <span class="badge bg-success" id="autoSaveBadge" style="display:none">
+            <i class="fas fa-check me-1"></i> Auto-sauvegarde activee
+        </span>
     </div>
     <div class="card-body">
-        <div class="d-flex gap-2 mb-3">
+        <div class="d-flex gap-2 mb-3 flex-wrap">
             <form method="POST" action="{{ url_for('settings.sauvegarder') }}">
                 <button type="submit" class="btn btn-success btn-sm">
-                    <i class="fas fa-download me-1"></i> Sauvegarder la base
+                    <i class="fas fa-save me-1"></i> Sauvegarder maintenant
                 </button>
             </form>
+            <button class="btn btn-outline-info btn-sm" onclick="exporterBackup()">
+                <i class="fas fa-usb me-1"></i> Exporter sur cle USB
+            </button>
         </div>
+        <p class="text-muted small mb-3">
+            <i class="fas fa-info-circle me-1"></i>
+            Sauvegarde automatique a chaque fermeture. Conservation automatique des 10 dernieres sauvegardes.
+        </p>
         {% if backups %}
         <div class="table-responsive">
             <table class="table table-sm table-hover mb-0">
@@ -145,13 +155,24 @@
                 <tbody>
                     {% for b in backups %}
                     <tr>
-                        <td>{{ b.name }}</td>
-                        <td>{{ b.size }}</td>
                         <td>
+                            {% if b.name.startswith('auto_') %}
+                            <i class="fas fa-clock text-muted me-1" title="Auto-sauvegarde"></i>
+                            {% else %}
+                            <i class="fas fa-hand-paper text-success me-1" title="Sauvegarde manuelle"></i>
+                            {% endif %}
+                            {{ b.name }}
+                        </td>
+                        <td>{{ b.size }}</td>
+                        <td class="d-flex gap-1">
+                            <a href="{{ url_for('settings.exporter_backup', filename=b.name) }}"
+                               class="btn btn-sm btn-outline-primary" title="Telecharger">
+                                <i class="fas fa-download"></i>
+                            </a>
                             {% if current_user.has_perm('sauvegarde_restaurer') %}
                             <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal"
                                     data-bs-target="#restoreModal{{ loop.index }}">
-                                <i class="fas fa-undo me-1"></i> Restaurer
+                                <i class="fas fa-undo"></i>
                             </button>
                             <div class="modal fade" id="restoreModal{{ loop.index }}" tabindex="-1">
                                 <div class="modal-dialog modal-sm">
@@ -247,4 +268,33 @@
     </div>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function autoSave() {
+    fetch("{{ url_for('settings.auto_save') }}", {method: "POST", headers: {"X-CSRFToken": "{{ csrf_token() }}"}})
+    .then(r => r.json())
+    .then(d => {
+        if (d.status === "ok") {
+            document.getElementById("autoSaveBadge").style.display = "inline";
+            setTimeout(() => { document.getElementById("autoSaveBadge").style.display = "none"; }, 3000);
+        }
+    }).catch(() => {});
+}
+
+window.addEventListener("beforeunload", function(e) {
+    navigator.sendBeacon("{{ url_for('settings.auto_save') }}");
+});
+
+setInterval(autoSave, 300000);
+
+function exporterBackup() {
+    {% if backups %}
+    window.location.href = "{{ url_for('settings.exporter_backup', filename=backups[0].name) }}";
+    {% else %}
+    alert("Aucune sauvegarde a exporter.");
+    {% endif %}
+}
+</script>
 {% endblock %}
