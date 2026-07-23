@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% block title %}Aide - FC VAINQUEUR{% endblock %}
+{% block page_title %}<i class="fas fa-question-circle me-2"></i> Aide{% endblock %}
+{% block content %}
+
+{% set role = current_user.role %}
+
+{% if role == 'lecteur' %}
+<div class="row g-3">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body text-center py-4">
+                <i class="fas fa-user-graduate fa-2x text-primary mb-2"></i>
+                <h5 class="fw-bold">Bienvenue, {{ current_user.nom_complet }} !</h5>
+                <p class="text-muted">Voici comment utiliser l'application FC VAINQUEUR.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="fw-bold text-primary"><i class="fas fa-users me-1"></i> Joueurs</h6>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Voir la liste des joueurs</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Consulter la fiche d'un joueur</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Exporter la liste en PDF ou Excel</li>
+                    <li class="mb-2"><i class="fas fa-times-circle text-danger me-2"></i> Pas de modification</li>
+                    <li class="mb-2"><i class="fas fa-times-circle text-danger me-2"></i> Pas de suppression</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="fw-bold text-info"><i class="fas fa-futbol me-1"></i> Ton compte</h6>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><i class="fas fa-arrow-right text-info me-2"></i> Connecte-toi avec ton identifiant</li>
+                    <li class="mb-2"><i class="fas fa-arrow-right text-info me-2"></i> Consulte ta fiche joueur</li>
+                    <li class="mb-2"><i class="fas fa-arrow-right text-info me-2"></i> Vois tes contributions</li>
+                    <li class="mb-2"><i class="fas fa-arrow-right text-info me-2"></i> Contacte l'admin si besoin</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% elif role == 'entraineur' %}
+<div class="row g-3">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body text-center py-4">
+                <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
+                <h5 class="fw-bold">Coach, voici tes outils !</h5>
+                <p class="text-muted">Gere l'equipe comme un pro.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="fw-bold text-success"><i class="fas fa-users me-1"></i> Joueurs</h6>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Voir tous les joueurs</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Modifier les observations</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Exporter en PDF/Excel</li>
+                    <li class="mb-2"><i class="fas fa-times-circle text-danger me-2"></i> Pas de suppression</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="fw-bold text-primary"><i class="fas fa-clipboard-list me-1"></i> Feuilles de match</h6>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Creer une feuille</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Selectionner titulaires</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Ajouter remplacants</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Noter tactique & blessures</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Modifier apres coup</li>
+                    <li class="mb-2"><i class="fas fa-print text-info me-2"></i> Imprimer la feuille</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="fw-bold text-danger"><i class="fas fa-ban me-1"></i> Pas d'acces</h6>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><i class="fas fa-times-circle text-danger me-2"></i> Budget</li>
+                    <li class="mb-2"><i class="fas fa-times-circle text-danger me-2"></i> Equipements</li>
+                    <li class="mb-2"><i class="fas fa-times-circle text-danger me-2"></i> Parametres</li>
+                    <li class="mb-2"><i class="fas fa-times-circle text-danger me-2"></i> Utilisateurs</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% elif role == 'tresorier' %}
+<div class="row g-3">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body text-center py-4">
+                <i class="fas fa-coins fa-2x text-success mb-2"></i>
+                <h5 class="fw-bold">Tresorier, gere le budget !</h5>
+                <p class="text-muted">Suis les recettes et depenses du club.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="fw-bold text-success"><i class="fas fa-wallet me-1"></i> Budget</h6>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Voir le solde</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Ajouter recettes/depenses</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Exporter en PDF/Excel</li>
+                    <li class="mb-2"><i class="fas fa-times-circle text-danger me-2"></i> Pas de suppression</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="fw-bold text-primary"><i class="fas fa-users me-1"></i> Joueurs</h6>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Voir la liste</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Exporter</li>
+                    <li class="mb-2"><i class="fas fa-times-circle text-danger me-2"></i> Pas de modification</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% elif role == 'administrateur' %}
+<div class="row g-3">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body text-center py-4">
+                <i class="fas fa-user-shield fa-2x text-success mb-2"></i>
+                <h5 class="fw-bold">Administrateur</h5>
+                <p class="text-muted">Gere presque tout dans l'application.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="fw-bold text-success"><i class="fas fa-users me-1"></i> Joueurs</h6>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Ajouter / Modifier / Supprimer</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Contributions</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Export PDF/Excel</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="fw-bold text-primary"><i class="fas fa-wallet me-1"></i> Budget & Equipements</h6>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Tout gerer</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Export PDF/Excel</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="fw-bold text-warning"><i class="fas fa-clipboard-list me-1"></i> Feuilles de match</h6>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Creer / Modifier</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Imprimer</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% elif role == 'super_administrateur' %}
+<div class="row g-3">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body text-center py-4">
+                <i class="fas fa-crown fa-2x text-warning mb-2"></i>
+                <h5 class="fw-bold">Super Administrateur</h5>
+                <p class="text-muted">Tu as tous les droits. Voici un recap.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-2x text-success mb-2"></i>
+                <h6 class="fw-bold">Joueurs</h6>
+                <small class="text-muted">Ajouter, modifier, supprimer, exporter</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-wallet fa-2x text-primary mb-2"></i>
+                <h6 class="fw-bold">Budget</h6>
+                <small class="text-muted">Tout gerer + exporter</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-clipboard-list fa-2x text-info mb-2"></i>
+                <h6 class="fw-bold">Feuilles</h6>
+                <small class="text-muted">Creer, modifier, supprimer, imprimer</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-cog fa-2x text-warning mb-2"></i>
+                <h6 class="fw-bold">Parametres</h6>
+                <small class="text-muted">Users, sauvegardes, audit, programmes</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mt-3">
+    <div class="card-body">
+        <h6 class="fw-bold mb-3"><i class="fas fa-shield-alt me-1"></i> Securite</h6>
+        <div class="row">
+            <div class="col-md-4">
+                <p class="small mb-1"><i class="fas fa-lock text-danger me-1"></i> Suppression = mot de passe requis</p>
+            </div>
+            <div class="col-md-4">
+                <p class="small mb-1"><i class="fas fa-database text-success me-1"></i> Sauvegardes auto toutes les 5 min</p>
+            </div>
+            <div class="col-md-4">
+                <p class="small mb-1"><i class="fas fa-clipboard text-info me-1"></i> Toutes les actions sont tracees</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
