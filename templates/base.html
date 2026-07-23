@@ -67,6 +67,12 @@
                     </a>
                 </li>
                 {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link {% if page == 'aide' %}active{% endif %}"
+                       href="{{ url_for('main.aide') }}">
+                        <i class="fas fa-question-circle me-2"></i> Aide
+                    </a>
+                </li>
             </ul>
             <div class="sidebar-footer px-3 py-3 mt-auto">
                 <div class="text-light small mb-2">
