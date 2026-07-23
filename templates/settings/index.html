@@ -273,14 +273,14 @@
 {% block scripts %}
 <script>
 function autoSave() {
-    fetch("{{ url_for('settings.auto_save') }}", {method: "POST", headers: {"X-CSRFToken": "{{ csrf_token() }}"}})
+    fetch("{{ url_for('settings.auto_save') }}", {method: "POST"})
     .then(r => r.json())
     .then(d => {
         if (d.status === "ok") {
-            document.getElementById("autoSaveBadge").style.display = "inline";
-            setTimeout(() => { document.getElementById("autoSaveBadge").style.display = "none"; }, 3000);
+            var badge = document.getElementById("autoSaveBadge");
+            if (badge) { badge.style.display = "inline"; setTimeout(function(){ badge.style.display = "none"; }, 3000); }
         }
-    }).catch(() => {});
+    }).catch(function(){});
 }
 
 window.addEventListener("beforeunload", function(e) {
