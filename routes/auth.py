@@ -30,6 +30,13 @@ def login():
                     )
                 except Exception:
                     pass
+                if user.is_super_admin():
+                    next_page = request.args.get("next")
+                    if next_page:
+                        return redirect(next_page)
+                    if user.has_perm("dashboard_voir"):
+                        return redirect(url_for("main.dashboard"))
+                    return redirect(url_for("joueurs.index"))
                 return redirect(url_for("auth.selfie"))
             flash("Identifiant ou mot de passe incorrect.", "danger")
         except Exception as e:
