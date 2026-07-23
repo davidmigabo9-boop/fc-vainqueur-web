@@ -96,6 +96,37 @@
     </div>
 </div>
 
+{% if anniversaires %}
+<div class="card border-0 shadow-sm mt-4">
+    <div class="card-header bg-white">
+        <h6 class="fw-bold mb-0"><i class="fas fa-birthday-cake me-1"></i> Anniversaires</h6>
+    </div>
+    <div class="card-body">
+        {% for ann in anniversaires %}
+        <div class="d-flex align-items-center mb-2">
+            <span class="badge bg-{{ 'success' if ann.niveau == 'aujourd\'hui' else 'warning' if ann.niveau == 'bientot' else 'info' }} me-2">
+                {{ ann.joueur.prenom }} {{ ann.joueur.nom }}
+            </span>
+            <span class="small">{{ ann.info.message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="row g-3 mt-2">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h6 class="fw-bold mb-0"><i class="fas fa-chart-pie me-1"></i> Repartition des ages</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="ageChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% if recent_logs %}
 <div class="card border-0 shadow-sm mt-4">
     <div class="card-header bg-white">
@@ -119,4 +150,29 @@
     </div>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var ctx = document.getElementById('ageChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: [{% for k in repartition_ages %}'{{ k }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+                datasets: [{
+                    data: [{% for k in repartition_ages %}{{ repartition_ages[k] }}{% if not loop.last %}, {% endif %}{% endfor %}],
+                    backgroundColor: ['#28a745', '#007bff', '#ffc107', '#dc3545']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+});
+</script>
 {% endblock %}
