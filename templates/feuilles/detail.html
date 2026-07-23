@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block title %}Feuille de Match - FC VAINQUEUR vs {{ feuille.adversaire }}{% endblock %}
+{% block page_title %}<i class="fas fa-clipboard-list me-2"></i> Feuille de Match{% endblock %}
+{% block content %}
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0">
+                    <i class="fas fa-futbol me-1"></i> FC VAINQUEUR vs {{ feuille.adversaire }}
+                </h6>
+                <div>
+                    {% if current_user.has_perm('feuilles_modifier') %}
+                    <a href="{{ url_for('feuilles.modifier', feuille_id=feuille.id) }}" class="btn btn-sm btn-light">
+                        <i class="fas fa-edit me-1"></i> Modifier
+                    </a>
+                    {% endif %}
+                    <button onclick="window.print()" class="btn btn-sm btn-outline-light">
+                        <i class="fas fa-print me-1"></i> Imprimer
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <small class="text-muted d-block">Date</small>
+                        <strong>{{ feuille.date_match }}</strong>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block">Heure</small>
+                        <strong>{{ feuille.heure_match or '-' }}</strong>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block">Lieu</small>
+                        <strong>{{ feuille.lieu or '-' }}</strong>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block">Statut</small>
+                        {% if feuille.statut == 'joue' %}
+                        <span class="badge bg-success">Joue</span>
+                        {% elif feuille.statut == 'en_cours' %}
+                        <span class="badge bg-warning text-dark">En cours</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Planifie</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="text-center bg-light rounded p-4 mb-4">
+                    <div class="d-flex justify-content-center align-items-center">
+                        <div class="text-center">
+                            <h2 class="fw-bold text-primary mb-0">{{ feuille.score_fcv }}</h2>
+                            <small class="text-muted">FC VAINQUEUR</small>
+                        </div>
+                        <div class="mx-4">
+                            <span class="fs-1 fw-bold text-muted">-</span>
+                        </div>
+                        <div class="text-center">
+                            <h2 class="fw-bold text-danger mb-0">{{ feuille.score_adv }}</h2>
+                            <small class="text-muted">{{ feuille.adversaire }}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <h6 class="fw-bold text-primary mb-3"><i class="fas fa-users me-1"></i> Composition</h6>
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-success fw-bold">Titulaires ({{ titulaires|length }})</h6>
+                        {% if titulaires %}
+                        <ul class="list-group list-group-flush">
+                            {% for j in titulaires %}
+                            <li class="list-group-item d-flex align-items-center px-0">
+                                <span class="badge bg-success me-2">{{ j.numero }}</span>
+                                <span>{{ j.prenom }} {{ j.nom }}</span>
+                                <small class="text-muted ms-auto">{{ j.poste }}</small>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="text-muted small">Aucun titulaire selectionne</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-info fw-bold">Remplacants ({{ remplacants|length }})</h6>
+                        {% if remplacants %}
+                        <ul class="list-group list-group-flush">
+                            {% for j in remplacants %}
+                            <li class="list-group-item d-flex align-items-center px-0">
+                                <span class="badge bg-info me-2">{{ j.numero }}</span>
+                                <span>{{ j.prenom }} {{ j.nom }}</span>
+                                <small class="text-muted ms-auto">{{ j.poste }}</small>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="text-muted small">Aucun remplaÃ§ant selectionne</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <h6 class="fw-bold text-info mb-2"><i class="fas fa-brain me-1"></i> Tactique</h6>
+                <p class="bg-light rounded p-3">{{ feuille.tactique or 'Non definie' }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="fw-bold mb-0"><i class="fas fa-band-aid me-1"></i> Blessures</h6>
+            </div>
+            <div class="card-body">
+                {% if feuille.blessures %}
+                <pre class="mb-0 small">{{ feuille.blessures }}</pre>
+                {% else %}
+                <p class="text-muted small mb-0">Aucune blessure</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-header bg-danger text-white">
+                <h6 class="fw-bold mb-0"><i class="fas fa-ban me-1"></i> Suspensions</h6>
+            </div>
+            <div class="card-body">
+                {% if feuille.suspensions %}
+                <pre class="mb-0 small">{{ feuille.suspensions }}</pre>
+                {% else %}
+                <p class="text-muted small mb-0">Aucune suspension</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="fw-bold mb-0"><i class="fas fa-shield-halved me-1"></i> Equipements</h6>
+            </div>
+            <div class="card-body">
+                {% if feuille.equipements %}
+                <pre class="mb-0 small">{{ feuille.equipements }}</pre>
+                {% else %}
+                <p class="text-muted small mb-0">Non precise</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <h6 class="fw-bold mb-0"><i class="fas fa-pen me-1"></i> Notes</h6>
+            </div>
+            <div class="card-body">
+                {% if feuille.notes %}
+                <pre class="mb-0 small">{{ feuille.notes }}</pre>
+                {% else %}
+                <p class="text-muted small mb-0">Aucune note</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if current_user.has_perm('feuilles_supprimer') %}
+        <div class="card border-0 shadow-sm mt-3">
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('feuilles.supprimer', feuille_id=feuille.id) }}"
+                      onsubmit="return confirm('Supprimer cette feuille de match?')">
+                    {% if current_user.is_super_admin() %}
+                    <div class="mb-2">
+                        <input type="password" name="admin_password" class="form-control form-control-sm"
+                               placeholder="Mot de passe Super Admin" required>
+                    </div>
+                    {% endif %}
+                    <button type="submit" class="btn btn-danger btn-sm w-100">
+                        <i class="fas fa-trash me-1"></i> Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+<div class="mb-4">
+    <a href="{{ url_for('feuilles.index') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Retour
+    </a>
+</div>
+{% endblock %}
