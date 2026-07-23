@@ -16,7 +16,15 @@ def create_app(config_name="development"):
 
     @app.context_processor
     def inject_now():
-        return {"now": datetime.now()}
+        from flask_login import current_user
+        unread = 0
+        if current_user.is_authenticated and current_user.has_perm("parametres_voir"):
+            try:
+                from models.login_attempt import LoginAttempt
+                unread = LoginAttempt.unread_count()
+            except Exception:
+                unread = 0
+        return {"now": datetime.now(), "unread_count": unread}
 
     data_dir = app.config.get("DATA_DIR", os.path.join(app.root_path, "instance"))
     os.makedirs(data_dir, exist_ok=True)
@@ -40,6 +48,7 @@ def create_app(config_name="development"):
     from routes.equipements import equipements_bp
     from routes.settings import settings_bp
     from routes.feuilles import feuilles_bp
+    from routes.security import security_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -48,6 +57,7 @@ def create_app(config_name="development"):
     app.register_blueprint(equipements_bp)
     app.register_blueprint(settings_bp)
     app.register_blueprint(feuilles_bp)
+    app.register_blueprint(security_bp)
 
     with app.app_context():
         db.create_all()
