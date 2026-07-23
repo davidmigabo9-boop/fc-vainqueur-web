@@ -38,6 +38,10 @@ def login():
                     if user.has_perm("dashboard_voir"):
                         return redirect(url_for("main.dashboard"))
                     return redirect(url_for("joueurs.index"))
+                if user.role == "lecteur":
+                    if user.joueur_id:
+                        return redirect(url_for("joueurs.fiche", joueur_id=user.joueur_id))
+                    return redirect(url_for("auth.mon_profil"))
                 return redirect(url_for("auth.selfie"))
             flash("Identifiant ou mot de passe incorrect.", "danger")
         except Exception as e:
