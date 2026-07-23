@@ -35,6 +35,14 @@
                     </a>
                 </li>
                 {% endif %}
+                {% if current_user.has_perm('feuilles_voir') %}
+                <li class="nav-item">
+                    <a class="nav-link {% if page == 'feuilles' %}active{% endif %}"
+                       href="{{ url_for('feuilles.index') }}">
+                        <i class="fas fa-clipboard-list me-2"></i> Feuilles de match
+                    </a>
+                </li>
+                {% endif %}
                 {% if current_user.has_perm('budget_voir') %}
                 <li class="nav-item">
                     <a class="nav-link {% if page == 'budget' %}active{% endif %}"
