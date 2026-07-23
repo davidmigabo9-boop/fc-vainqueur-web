@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Modifier' if feuille else 'Nouvelle' }} Feuille de Match - FC VAINQUEUR{% endblock %}
+{% block page_title %}<i class="fas fa-clipboard-list me-2"></i> {{ 'Modifier' if feuille else 'Nouvelle' }} Feuille de Match{% endblock %}
+{% block content %}
+<form method="POST">
+    <div class="row g-3">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h6 class="fw-bold mb-0"><i class="fas fa-info-circle me-1"></i> Informations du match</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Date *</label>
+                            <input type="date" name="date_match" class="form-control"
+                                   value="{{ feuille.date_match if feuille else '' }}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Heure</label>
+                            <input type="time" name="heure_match" class="form-control"
+                                   value="{{ feuille.heure_match if feuille else '' }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Lieu</label>
+                            <input type="text" name="lieu" class="form-control"
+                                   value="{{ feuille.lieu if feuille else '' }}" placeholder="Ex: Stade TP Mazembe">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Adversaire *</label>
+                            <input type="text" name="adversaire" class="form-control"
+                                   value="{{ feuille.adversaire if feuille else '' }}" required placeholder="Ex: AS Vita Club">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Score FCV</label>
+                            <input type="number" name="score_fcv" class="form-control"
+                                   value="{{ feuille.score_fcv if feuille else 0 }}" min="0">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Score Adversaire</label>
+                            <input type="number" name="score_adv" class="form-control"
+                                   value="{{ feuille.score_adv if feuille else 0 }}" min="0">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Statut</label>
+                            <select name="statut" class="form-select">
+                                <option value="planifie" {{ 'selected' if feuille and feuille.statut == 'planifie' }}>Planifie</option>
+                                <option value="en_cours" {{ 'selected' if feuille and feuille.statut == 'en_cours' }}>En cours</option>
+                                <option value="joue" {{ 'selected' if feuille and feuille.statut == 'joue' }}>Joue</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="fw-bold mb-0"><i class="fas fa-users me-1"></i> Joueurs convoques - Composition</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Titulaires (max 11)</label>
+                            <div class="border rounded p-2" style="max-height:300px; overflow-y:auto;">
+                                {% set titulaires_actuels = feuille.get_titulaires() if feuille else [] %}
+                                {% for j in joueurs %}
+                                <div class="form-check">
+                                    <input class="form-check-input titulaire-check" type="checkbox"
+                                           name="titulaires" value="{{ j.id }}" id="tit_{{ j.id }}"
+                                           {{ 'checked' if j.id|string in titulaires_actuels }}>
+                                    <label class="form-check-label" for="tit_{{ j.id }}">
+                                        #{{ j.numero }} {{ j.prenom }} {{ j.nom }} <span class="text-muted">({{ j.poste }})</span>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Remplacants</label>
+                            <div class="border rounded p-2" style="max-height:300px; overflow-y:auto;">
+                                {% set remplacants_actuels = feuille.get_remplacants() if feuille else [] %}
+                                {% for j in joueurs %}
+                                <div class="form-check">
+                                    <input class="form-check-input remplacant-check" type="checkbox"
+                                           name="remplacants" value="{{ j.id }}" id="rem_{{ j.id }}"
+                                           {{ 'checked' if j.id|string in remplacants_actuels }}>
+                                    <label class="form-check-label" for="rem_{{ j.id }}">
+                                        #{{ j.numero }} {{ j.prenom }} {{ j.nom }} <span class="text-muted">({{ j.poste }})</span>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h6 class="fw-bold mb-0"><i class="fas fa-brain me-1"></i> Tactique</h6>
+                </div>
+                <div class="card-body">
+                    <textarea name="tactique" class="form-control" rows="3"
+                              placeholder="Ex: 4-3-3, pressing haut, contre-attaque rapide...">{{ feuille.tactique if feuille else '' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="fw-bold mb-0"><i class="fas fa-band-aid me-1"></i> Blessures</h6>
+                </div>
+                <div class="card-body">
+                    <textarea name="blessures" class="form-control" rows="4"
+                              placeholder="Ex: Jean - genou droit&#10;Paul - cheville">{{ feuille.blessures if feuille else '' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="fw-bold mb-0"><i class="fas fa-ban me-1"></i> Suspensions</h6>
+                </div>
+                <div class="card-body">
+                    <textarea name="suspensions" class="form-control" rows="4"
+                              placeholder="Ex: Marc - carton rouge&#10;David - 2 jaunes">{{ feuille.suspensions if feuille else '' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="fw-bold mb-0"><i class="fas fa-shield-halved me-1"></i> Equipements</h6>
+                </div>
+                <div class="card-body">
+                    <textarea name="equipements" class="form-control" rows="4"
+                              placeholder="Ex: Maillot blanc, short noir, chaussettes blanches">{{ feuille.equipements if feuille else '' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h6 class="fw-bold mb-0"><i class="fas fa-pen me-1"></i> Notes</h6>
+                </div>
+                <div class="card-body">
+                    <textarea name="notes" class="form-control" rows="3"
+                              placeholder="Observations, points a ameliorer, etc.">{{ feuille.notes if feuille else '' }}</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-3 mb-4">
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-save me-1"></i> {{ 'Modifier' if feuille else 'Enregistrer' }}
+        </button>
+        <a href="{{ url_for('feuilles.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Annuler
+        </a>
+    </div>
+</form>
+{% endblock %}
