@@ -89,6 +89,7 @@ def sauvegarder():
         db_path = db_uri
     backup_path = os.path.join(current_app.config["BACKUPS_FOLDER"], f"backup_{timestamp}.db")
     shutil.copy2(db_path, backup_path)
+    _cleanup_old_backups(current_app.config["BACKUPS_FOLDER"], 10)
     AuditLog.log(current_user.id, current_user.username, current_user.role,
                  "Sauvegarde", f"Sauvegarde creee : backup_{timestamp}.db")
     flash("Sauvegarde creee avec succes.", "success")
@@ -153,6 +154,15 @@ def _list_backups():
     return backups
 
 
+def _cleanup_old_backups(folder, max_keep=10):
+    try:
+        files = sorted([f for f in os.listdir(folder) if f.endswith(".db")], reverse=True)
+    except FileNotFoundError:
+        return
+    for f in files[max_keep:]:
+        os.remove(os.path.join(folder, f))
+
+
 @settings_bp.route("/programmes")
 @login_required
 @role_required("parametres_modifier")
@@ -160,6 +170,36 @@ def programmes():
     from models.programme import Programme
     progs = Programme.query.order_by(Programme.date_evenement.desc()).all()
     return render_template("settings/programmes.html", programmes=progs, page="settings")
+
+
+@settings_bp.route("/exporter-backup/<filename>")
+@login_required
+@role_required("sauvegarde_creer")
+def exporter_backup(filename):
+    from flask import send_file
+    backup_path = os.path.join(current_app.config["BACKUPS_FOLDER"], filename)
+    if not os.path.isfile(backup_path):
+        flash("Sauvegarde introuvable.", "danger")
+        return redirect(url_for("settings.index"))
+    AuditLog.log(current_user.id, current_user.username, current_user.role,
+                 "Export sauvegarde", f"Export : {filename}")
+    return send_file(backup_path, as_attachment=True, download_name=filename)
+
+
+@settings_bp.route("/auto-save", methods=["POST"])
+@login_required
+@role_required("sauvegarde_creer")
+def auto_save():
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    db_uri = current_app.config["SQLALCHEMY_DATABASE_URI"]
+    if db_uri.startswith("sqlite:///"):
+        db_path = db_uri[len("sqlite:///"):]
+    else:
+        db_path = db_uri
+    backup_path = os.path.join(current_app.config["BACKUPS_FOLDER"], f"auto_{timestamp}.db")
+    shutil.copy2(db_path, backup_path)
+    _cleanup_old_backups(current_app.config["BACKUPS_FOLDER"], 10)
+    return {"status": "ok"}
 
 
 @settings_bp.route("/programmes/ajouter", methods=["POST"])
