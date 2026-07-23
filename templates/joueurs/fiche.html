@@ -19,6 +19,9 @@
                 <p class="text-muted mb-3">#{{ joueur.numero }} | {{ joueur.poste }}</p>
 
                 <div class="d-grid gap-2">
+                    <a href="{{ url_for('joueurs.evolution', joueur_id=joueur.id) }}" class="btn btn-outline-info">
+                        <i class="fas fa-chart-line me-1"></i> Evolution
+                    </a>
                     {% if current_user.has_perm('joueurs_modifier') %}
                     <a href="{{ url_for('joueurs.modifier', joueur_id=joueur.id) }}"
                        class="btn btn-outline-primary">
@@ -41,11 +44,16 @@
             <div class="card-body">
                 <h6 class="fw-bold mb-3"><i class="fas fa-info-circle me-1"></i> Informations</h6>
                 <table class="table table-sm mb-0">
-                    <tr><td class="text-muted">Age</td><td>{{ joueur.calculer_age() }} ans</td></tr>
+                    <tr><td class="text-muted">Age</td><td>{{ age_exact }}</td></tr>
+                    <tr><td class="text-muted">Categorie</td><td><span class="badge bg-info">{{ categorie }}</span></td></tr>
+                    <tr><td class="text-muted">Potentiel</td><td><span class="badge bg-{{ potentiel.couleur }}">{{ potentiel.label }}</span></td></tr>
                     <tr><td class="text-muted">Telephone</td><td>{{ joueur.telephone or '-' }}</td></tr>
                     <tr><td class="text-muted">Date naissance</td><td>{{ joueur.date_naissance or '-' }}</td></tr>
                     <tr><td class="text-muted">Date inscription</td><td>{{ joueur.date_inscription or '-' }}</td></tr>
                 </table>
+                <a href="{{ url_for('joueurs.evolution', joueur_id=joueur.id) }}" class="btn btn-sm btn-outline-info mt-2 w-100">
+                    <i class="fas fa-chart-line me-1"></i> Voir l'evolution
+                </a>
             </div>
         </div>
     </div>
