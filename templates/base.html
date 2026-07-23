@@ -18,7 +18,7 @@
                 <h5 class="text-white mb-1">FC VAINQUEUR</h5>
                 <span class="badge bg-warning text-dark">{{ current_user.role_label }}</span>
             </div>
-            <ul class="nav flex-column px-2">
+            <ul class="nav flex-column px-2 sidebar-nav-scroll">
                 {% if current_user.has_perm('dashboard_voir') %}
                 <li class="nav-item">
                     <a class="nav-link {% if page == 'dashboard' %}active{% endif %}"
