@@ -8,6 +8,7 @@ from models.programme import Programme
 from models.photo import Photo
 from datetime import datetime, timedelta
 from routes import role_required
+from age_utils import repartition_ages, anniversaire_info
 
 main_bp = Blueprint("main", __name__)
 
@@ -63,7 +64,16 @@ def dashboard():
 
     budget_faible = stats["solde"] < 50000
 
+    all_joueurs = Joueur.active_joueurs()
+    repartition = repartition_ages(all_joueurs)
+    anniversaires = []
+    for j in all_joueurs:
+        info = anniversaire_info(j.date_naissance)
+        if info and info["niveau"] in ("aujourd'hui", "bientot"):
+            anniversaires.append({"joueur": j, "info": info})
+
     recent_logs = AuditLog.get_recent(5)
     return render_template("dashboard.html", stats=stats, recent_logs=recent_logs,
                            page="dashboard", nb_sans_cotisation=nb_sans,
-                           prochains_matchs=prochains_matchs, budget_faible=budget_faible)
+                           prochains_matchs=prochains_matchs, budget_faible=budget_faible,
+                           repartition_ages=repartition, anniversaires=anniversaires)
