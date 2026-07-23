@@ -33,19 +33,11 @@ def _save_photo(file, joueur_id=None):
 @login_required
 @role_required("joueurs_voir")
 def index():
-    terme = request.args.get("q", "").strip()
     if current_user.role == "lecteur":
-        if terme:
-            joueurs = Joueur.search(terme)
-            if len(joueurs) == 1:
-                return redirect(url_for("joueurs.fiche", joueur_id=joueurs[0].id))
-            elif len(joueurs) == 0:
-                return render_template("joueurs/index.html", joueurs=[], terme=terme,
-                                       page="joueurs", introuvable=True)
-            return render_template("joueurs/index.html", joueurs=joueurs, terme=terme,
-                                   page="joueurs")
-        return render_template("joueurs/index.html", joueurs=[], terme="",
-                               page="joueurs", recherche_mode=True)
+        if current_user.joueur_id:
+            return redirect(url_for("joueurs.fiche", joueur_id=current_user.joueur_id))
+        return redirect(url_for("auth.mon_profil"))
+    terme = request.args.get("q", "").strip()
     if terme:
         joueurs = Joueur.search(terme)
     else:
