@@ -20,6 +20,12 @@ def home():
     return render_template("public/home.html", programmes=programmes, joueurs=joueurs, photos=photos)
 
 
+@main_bp.route("/aide")
+@login_required
+def aide():
+    return render_template("help.html", page="aide")
+
+
 @main_bp.route("/")
 @login_required
 def index():
