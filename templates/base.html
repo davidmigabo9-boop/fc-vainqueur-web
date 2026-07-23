@@ -67,6 +67,17 @@
                     </a>
                 </li>
                 {% endif %}
+                {% if current_user.has_perm('parametres_voir') %}
+                <li class="nav-item">
+                    <a class="nav-link {% if page == 'security' %}active{% endif %}"
+                       href="{{ url_for('security.center') }}">
+                        <i class="fas fa-shield-alt me-2"></i> Securite
+                        {% if unread_count > 0 %}
+                        <span class="badge bg-danger ms-1">{{ unread_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                {% endif %}
                 <li class="nav-item">
                     <a class="nav-link {% if page == 'aide' %}active{% endif %}"
                        href="{{ url_for('main.aide') }}">
