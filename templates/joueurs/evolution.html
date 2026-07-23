@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Evolution - {{ joueur.prenom }} {{ joueur.nom }}{% endblock %}
+{% block page_title %}<i class="fas fa-chart-line me-2"></i> Evolution du Joueur{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="player-avatar-lg me-3">
+                        {% if joueur.photo %}
+                        <img src="{{ url_for('static', filename='uploads/photos/' + joueur.photo) }}"
+                             alt="Photo" class="rounded-circle" width="80" height="80"
+                             style="object-fit:cover;" onerror="this.parentElement.innerHTML='{{ joueur.get_initials() }}'">
+                        {% else %}
+                        <div class="avatar-initials-lg" style="width:80px;height:80px;font-size:1.8rem;">{{ joueur.get_initials() }}</div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0">{{ joueur.prenom }} {{ joueur.postnom or '' }} {{ joueur.nom }}</h4>
+                        <span class="text-muted">#{{ joueur.numero }} | {{ joueur.poste }}</span>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card bg-light border-0">
+                            <div class="card-body text-center py-3">
+                                <i class="fas fa-birthday-cake fa-2x text-primary mb-2"></i>
+                                <h6 class="fw-bold mb-1">Age exact</h6>
+                                <span class="fs-5 fw-bold">{{ age_exact }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light border-0">
+                            <div class="card-body text-center py-3">
+                                <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
+                                <h6 class="fw-bold mb-1">Categorie</h6>
+                                <span class="badge bg-{{ 'success' if categorie in ['U9','U11','U13'] else 'primary' if categorie in ['U15','U17','U20'] else 'warning' if categorie == 'Senior' else 'danger' }} fs-6">{{ categorie }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light border-0">
+                            <div class="card-body text-center py-3">
+                                <i class="fas fa-calendar-alt fa-2x text-info mb-2"></i>
+                                <h6 class="fw-bold mb-1">Prochain anniversaire</h6>
+                                {% if anniversaire %}
+                                <span class="fw-bold">{{ anniversaire.message }}</span>
+                                {% else %}
+                                <span class="text-muted">Non defini</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light border-0">
+                            <div class="card-body text-center py-3">
+                                <i class="fas fa-clock fa-2x text-secondary mb-2"></i>
+                                <h6 class="fw-bold mb-1">Annees au club</h6>
+                                <span class="fs-5 fw-bold">{{ annees_club if annees_club is not none else 'N/A' }} an(s)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body text-center py-4">
+                <i class="fas {{ potentiel.icone }} fa-3x text-{{ potentiel.couleur }} mb-2"></i>
+                <h6 class="fw-bold mb-1">Potentiel</h6>
+                <span class="badge bg-{{ potentiel.couleur }} fs-5">{{ potentiel.label }}</span>
+            </div>
+        </div>
+
+        {% if alerte_categorie %}
+        <div class="card border-0 shadow-sm mb-3 border-start border-4 border-{{ 'danger' if alerte_categorie.niveau == 'critique' else 'warning' }}">
+            <div class="card-body py-3">
+                <h6 class="fw-bold mb-1 text-{{ 'danger' if alerte_categorie.niveau == 'critique' else 'warning' }}">
+                    <i class="fas fa-exclamation-triangle me-1"></i> Alerte categorie
+                </h6>
+                <p class="mb-0 small">{{ alerte_categorie.message }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if anniversaire and anniversaire.niveau in ['aujourd\'hui', 'bientot'] %}
+        <div class="card border-0 shadow-sm border-start border-4 border-success">
+            <div class="card-body py-3">
+                <h6 class="fw-bold mb-1 text-success">
+                    <i class="fas fa-gift me-1"></i> Anniversaire
+                </h6>
+                <p class="mb-0 small">{{ anniversaire.message }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h6 class="fw-bold mb-0"><i class="fas fa-heartbeat me-1"></i> Recommandation</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">{{ recommandation }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h6 class="fw-bold mb-0"><i class="fas fa-info-circle me-1"></i> Details</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm mb-0">
+                    <tr><td class="text-muted">Date de naissance</td><td>{{ joueur.date_naissance or '-' }}</td></tr>
+                    <tr><td class="text-muted">Date d'inscription</td><td>{{ joueur.date_inscription or '-' }}</td></tr>
+                    <tr><td class="text-muted">Categorie automatique</td><td>{{ categorie }}</td></tr>
+                    <tr><td class="text-muted">Annees au club</td><td>{{ annees_club if annees_club is not none else 'N/A' }}</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="{{ url_for('joueurs.fiche', joueur_id=joueur.id) }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Retour a la fiche
+    </a>
+</div>
+{% endblock %}
