@@ -39,6 +39,7 @@ def create_app(config_name="development"):
     from routes.budget import budget_bp
     from routes.equipements import equipements_bp
     from routes.settings import settings_bp
+    from routes.feuilles import feuilles_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -46,6 +47,7 @@ def create_app(config_name="development"):
     app.register_blueprint(budget_bp)
     app.register_blueprint(equipements_bp)
     app.register_blueprint(settings_bp)
+    app.register_blueprint(feuilles_bp)
 
     with app.app_context():
         db.create_all()
