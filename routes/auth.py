@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from models.user import Utilisateur
@@ -98,10 +99,63 @@ def check_status(attempt_id):
                              "Connexion autorisee", "Selfie verifie par l'admin")
             except Exception:
                 pass
+            if user.role == "lecteur":
+                if user.joueur_id:
+                    return {"status": "autorise", "redirect": f"/joueurs/{user.joueur_id}"}
+                return {"status": "autorise", "redirect": "/mon-profil"}
             if user.has_perm("dashboard_voir"):
                 return {"status": "autorise", "redirect": "/dashboard"}
             return {"status": "autorise", "redirect": "/joueurs"}
     return {"status": attempt.statut}
+
+
+@auth_bp.route("/mon-profil", methods=["GET", "POST"])
+@login_required
+def mon_profil():
+    if current_user.role != "lecteur":
+        if current_user.has_perm("dashboard_voir"):
+            return redirect(url_for("main.dashboard"))
+        return redirect(url_for("joueurs.index"))
+    if current_user.joueur_id:
+        return redirect(url_for("joueurs.fiche", joueur_id=current_user.joueur_id))
+    if request.method == "POST":
+        import uuid as uid
+        from flask import current_app
+        from models.joueur import Joueur
+        nom = request.form.get("nom", "").strip()
+        prenom = request.form.get("prenom", "").strip()
+        if not nom or not prenom:
+            flash("Nom et Prenom sont obligatoires.", "warning")
+            return render_template("profil.html")
+        joueur = Joueur(
+            nom=nom,
+            postnom=request.form.get("postnom", "").strip(),
+            prenom=prenom,
+            numero=int(request.form.get("numero", 0) or 0),
+            poste=request.form.get("poste", ""),
+            date_naissance=request.form.get("date_naissance", "").strip(),
+            telephone=request.form.get("telephone", "").strip(),
+            adresse=request.form.get("adresse", "").strip(),
+            date_inscription=datetime.now().strftime("%Y-%m-%d"),
+        )
+        db.session.add(joueur)
+        db.session.flush()
+        photo_file = request.files.get("photo")
+        if photo_file and photo_file.filename:
+            ext = photo_file.filename.rsplit(".", 1)[-1].lower()
+            if ext in {"png", "jpg", "jpeg", "gif", "bmp", "webp"}:
+                filename = f"joueur_{joueur.id}_{uid.uuid4().hex[:8]}.{ext}"
+                filepath = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
+                photo_file.save(filepath)
+                joueur.photo = filename
+        current_user.joueur_id = joueur.id
+        current_user.nom_complet = f"{prenom} {nom}"
+        db.session.commit()
+        AuditLog.log(current_user.id, current_user.username, current_user.role,
+                     "Profil complete", f"Joueur cree : {prenom} {nom}")
+        flash("Profil enregistre avec succes!", "success")
+        return redirect(url_for("joueurs.fiche", joueur_id=joueur.id))
+    return render_template("profil.html")
 
 
 @auth_bp.route("/register", methods=["GET", "POST"])
