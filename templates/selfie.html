@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selfie de verification - FC VAINQUEUR</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-dark d-flex align-items-center justify-content-center min-vh-100">
+    <div class="card border-0 shadow" style="max-width:400px; width:100%;">
+        <div class="card-body text-center p-4">
+            <div id="step1">
+                <i class="fas fa-camera fa-3x text-primary mb-3"></i>
+                <h5 class="fw-bold">Selfie de verification</h5>
+                <p class="text-muted small mb-3">
+                    Pour des raisons de securite, veuillez autoriser l'acces a votre camera afin de prendre un selfie.
+                </p>
+                <video id="video" class="rounded mb-3 w-100" autoplay playsinline style="max-height:300px; display:none;"></video>
+                <canvas id="canvas" style="display:none;"></canvas>
+                <img id="preview" class="rounded mb-3 w-100" style="max-height:300px; display:none;" alt="Selfie">
+                <div class="d-grid gap-2">
+                    <button id="btnStart" class="btn btn-primary" onclick="startCamera()">
+                        <i class="fas fa-camera me-1"></i> Activer la camera
+                    </button>
+                    <button id="btnCapture" class="btn btn-success" onclick="captureSelfie()" style="display:none;">
+                        <i class="fas fa-circle me-1"></i> Prendre le selfie
+                    </button>
+                    <button id="btnRetake" class="btn btn-warning" onclick="retake()" style="display:none;">
+                        <i class="fas fa-redo me-1"></i> Reprendre
+                    </button>
+                    <form id="uploadForm" method="POST" enctype="multipart/form-data" style="display:none;">
+                        <input type="file" name="selfie" id="selfieInput" accept="image/*">
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-check me-1"></i> Envoyer et continuer
+                        </button>
+                    </form>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-sign-out-alt me-1"></i> Deconnexion
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    var stream = null;
+    function startCamera() {
+        navigator.mediaDevices.getUserMedia({video: {facingMode: "user"}})
+        .then(function(s) {
+            stream = s;
+            var video = document.getElementById("video");
+            video.srcObject = stream;
+            video.style.display = "block";
+            document.getElementById("btnStart").style.display = "none";
+            document.getElementById("btnCapture").style.display = "block";
+        })
+        .catch(function(err) {
+            alert("Camera non disponible. Vous pouvez continuer sans selfie.");
+            document.getElementById("uploadForm").style.display = "block";
+            document.getElementById("btnStart").style.display = "none";
+        });
+    }
+    function captureSelfie() {
+        var video = document.getElementById("video");
+        var canvas = document.getElementById("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext("2d").drawImage(video, 0, 0);
+        var dataUrl = canvas.toDataURL("image/jpeg");
+        document.getElementById("preview").src = dataUrl;
+        document.getElementById("preview").style.display = "block";
+        video.style.display = "none";
+        if (stream) { stream.getTracks().forEach(function(t) { t.stop(); }); }
+        document.getElementById("btnCapture").style.display = "none";
+        document.getElementById("btnRetake").style.display = "block";
+        canvas.toBlob(function(blob) {
+            var file = new File([blob], "selfie.jpg", {type: "image/jpeg"});
+            var dt = new DataTransfer();
+            dt.items.add(file);
+            document.getElementById("selfieInput").files = dt.files;
+            document.getElementById("uploadForm").style.display = "block";
+        }, "image/jpeg");
+    }
+    function retake() {
+        document.getElementById("preview").style.display = "none";
+        document.getElementById("uploadForm").style.display = "none";
+        document.getElementById("btnRetake").style.display = "none";
+        startCamera();
+    }
+    </script>
+</body>
+</html>
